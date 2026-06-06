@@ -130,10 +130,10 @@ deeplearning2se/
 - [ ] 创建并激活环境。
 - [ ] 安装 PyTorch CUDA 12.1 版本。
 - [ ] 安装 Transformers、Datasets、PEFT、Accelerate、bitsandbytes、scikit-learn 等依赖。
-- [ ] 写 `requirements.txt`。
-- [ ] 写 `src/export_hf_dataset.py`。
+- [x] 写 `requirements.txt`。
+- [x] 写 `src/export_hf_dataset.py`。
 - [ ] 下载并保存 Devign 官方划分。
-- [ ] 写数据检查逻辑，输出每个 split 的样本数、标签分布、平均函数长度。
+- [x] 写数据检查逻辑，输出每个 split 的样本数、标签分布、平均函数长度。
 
 推荐命令：
 
@@ -141,14 +141,15 @@ deeplearning2se/
 conda create -n dlse python=3.10 -y
 conda activate dlse
 pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121
-pip install transformers==4.48.0 datasets==2.21.0 peft==0.14.0 accelerate==1.0.1 bitsandbytes==0.43.3 evaluate==0.4.3 scikit-learn==1.5.1 pandas==2.2.2 matplotlib==3.9.2 pyyaml==6.0.2 tqdm==4.66.5
+pip install -r requirements.txt
+python src/export_hf_dataset.py --dataset google/code_x_glue_cc_defect_detection --out data/raw/devign_hf --stats-out reports/tables
 ```
 
 验收标准：
 
 - [ ] `python src/export_hf_dataset.py ...` 能成功生成 `data/raw/devign_hf/`。
 - [ ] `reports/tables/dataset_stats.csv` 中有 split、label count、平均长度等统计。
-- [ ] README 中能说明如何复现数据准备。
+- [x] README 中能说明如何复现数据准备。
 
 ### Phase 2：LOSVER-Light 行级信号与代码度量
 

@@ -45,3 +45,15 @@ git push -u origin main
 ```
 
 Remote creation requires GitHub authentication, for example `gh auth login` or a valid GitHub token.
+
+## Phase 1 Commands
+
+Environment setup and dataset download should be run manually:
+
+```bash
+conda create -n dlse python=3.10 -y
+conda activate dlse
+pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121
+pip install -r requirements.txt
+python src/export_hf_dataset.py --dataset google/code_x_glue_cc_defect_detection --out data/raw/devign_hf --stats-out reports/tables
+```

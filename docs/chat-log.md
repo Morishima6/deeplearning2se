@@ -43,3 +43,24 @@
 - 遇到的问题：
 - 下一步：
 ```
+
+## 2026-06-06 15:30
+
+- 本次目标：开始 Phase 1，在不代替用户执行安装/环境配置的前提下，准备依赖清单和数据导出脚本。
+- 已完成：
+  - 新增 `requirements.txt`，记录除 PyTorch CUDA wheel 以外的 Python 依赖。
+  - 新增 `src/export_hf_dataset.py`，用于从 Hugging Face 导出 Devign/CodeXGLUE 数据集到 JSONL。
+  - 脚本支持自动识别代码列和标签列，生成 `train.jsonl`、`valid.jsonl`、`test.jsonl`。
+  - 脚本会输出 `dataset_stats.csv/json`，记录样本数、标签分布、平均/中位代码长度。
+  - 已执行 `python -m py_compile src/export_hf_dataset.py`，语法检查通过。
+- 关键命令：
+  - `python -m py_compile src/export_hf_dataset.py`
+- 结果文件：
+  - `requirements.txt`
+  - `src/export_hf_dataset.py`
+- 遇到的问题：
+  - 尚未执行环境安装和数据下载；这类操作按用户要求只提供命令，由用户自行执行。
+- 下一步：
+  - 用户手动创建环境并安装依赖。
+  - 用户手动运行数据导出命令。
+  - 根据用户运行结果修正数据集名称、字段名或下载参数。
