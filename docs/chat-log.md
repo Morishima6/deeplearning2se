@@ -141,3 +141,22 @@
 - 关键约束：
   - 轻量报告文件仍可写入仓库内 `reports/`。
   - `data/`、`outputs/` 仅作为忽略占位，不作为服务器实际大文件存储位置。
+
+## 2026-06-07 19:10
+
+- 本次目标：记录 Phase 2/3 运行结果。
+- 已完成：
+  - `download.sh` 成功导出 CodeXGLUE Defect Detection / Devign 数据，最终通过 GitHub raw fallback 获取原始数据。
+  - 生成 `$DLSE_DATA_ROOT/processed/devign_losver/{train,valid,test}.jsonl`。
+  - 生成 `reports/tables/line_signal_stats.csv/json` 和 `reports/tables/code_metrics.csv`。
+  - 跑通 Metrics-Baseline：Logistic Regression, seed=42。
+- 关键结果：
+  - 验证集：threshold=0.355，F1=0.606481，ROC-AUC=0.562635。
+  - 测试集：Accuracy=0.463397，Precision=0.461113，Recall=0.996813，F1=0.630544，ROC-AUC=0.560892，PR-AUC=0.536395。
+  - 测试集混淆矩阵：TN=15，FP=1462，FN=4，TP=1251。
+- 初步分析：
+  - 代码度量基线召回率极高，但误报严重，说明当前阈值下模型几乎倾向于判为 vulnerable。
+  - ROC-AUC 约 0.56，表明浅层代码度量只有弱区分能力，可作为后续 Qwen/LOSVER-Light 的对照。
+- 下一步：
+  - 跑 Qwen vanilla smoke test，确认模型加载、cache 路径和训练链路正常。
+  - smoke test 成功后跑 full Vanilla、Tag、Tag+Prefix 三组实验。

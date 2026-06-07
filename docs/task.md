@@ -227,7 +227,8 @@ python src/train_metrics_baseline.py \
 
 - [ ] `$DLSE_MODEL_ROOT/outputs/run_metrics_seed42/eval.json` 存在。
 - [ ] `$DLSE_MODEL_ROOT/outputs/run_metrics_seed42/test_predictions.csv` 存在。
-- [ ] 指标表可直接放入报告。
+- [x] 指标表可直接放入报告。
+- [x] Metrics-Baseline 已完成：测试集 F1=0.630544，ROC-AUC=0.560892，PR-AUC=0.536395。
 
 ### Phase 4：Qwen2.5-Coder QLoRA 训练链路
 

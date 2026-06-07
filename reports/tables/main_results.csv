@@ -1,0 +1,2 @@
+run,model,text_field,seed,threshold,accuracy,precision,recall,f1,roc_auc,pr_auc,tn,fp,fn,tp
+run_metrics_seed42,LogisticRegression,metrics,42,0.355,0.463397,0.461113,0.996813,0.630544,0.560892,0.536395,15,1462,4,1251

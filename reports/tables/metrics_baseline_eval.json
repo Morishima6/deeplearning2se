@@ -1,0 +1,31 @@
+{
+  "model": "LogisticRegression",
+  "seed": 42,
+  "valid_best_f1": 0.606481,
+  "valid": {
+    "threshold": 0.355,
+    "accuracy": 0.439971,
+    "precision": 0.436505,
+    "recall": 0.99326,
+    "f1": 0.606481,
+    "tn": 23,
+    "fp": 1522,
+    "fn": 8,
+    "tp": 1179,
+    "roc_auc": 0.562635,
+    "pr_auc": 0.511934
+  },
+  "test": {
+    "threshold": 0.355,
+    "accuracy": 0.463397,
+    "precision": 0.461113,
+    "recall": 0.996813,
+    "f1": 0.630544,
+    "tn": 15,
+    "fp": 1462,
+    "fn": 4,
+    "tp": 1251,
+    "roc_auc": 0.560892,
+    "pr_auc": 0.536395
+  }
+}
