@@ -1,0 +1,29 @@
+{
+  "train": {
+    "num_samples": 21854,
+    "num_safe": 11836,
+    "num_vulnerable": 10018,
+    "avg_lines": 112.44,
+    "median_lines": 57.0,
+    "avg_chars": 2031.38,
+    "median_chars": 934.5
+  },
+  "valid": {
+    "num_samples": 2732,
+    "num_safe": 1545,
+    "num_vulnerable": 1187,
+    "avg_lines": 109.32,
+    "median_lines": 57.0,
+    "avg_chars": 1982.55,
+    "median_chars": 927.5
+  },
+  "test": {
+    "num_samples": 2732,
+    "num_safe": 1477,
+    "num_vulnerable": 1255,
+    "avg_lines": 112.3,
+    "median_lines": 59.0,
+    "avg_chars": 2006.05,
+    "median_chars": 965.5
+  }
+}

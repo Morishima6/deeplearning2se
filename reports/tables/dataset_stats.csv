@@ -1,0 +1,4 @@
+split,num_samples,num_safe,num_vulnerable,avg_lines,median_lines,avg_chars,median_chars
+train,21854,11836,10018,112.44,57.0,2031.38,934.5
+valid,2732,1545,1187,109.32,57.0,1982.55,927.5
+test,2732,1477,1255,112.3,59.0,2006.05,965.5
