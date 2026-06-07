@@ -13,18 +13,17 @@ unset HUGGINGFACE_HUB_TOKEN
 unset HUGGING_FACE_HUB_TOKEN
 mkdir -p "$DLSE_DATA_ROOT" "$DLSE_MODEL_ROOT" "$HF_HOME" "$HF_DATASETS_CACHE"
 
-accelerate launch --num_processes 1 --mixed_precision fp16 src/train_qwen_cls.py \
+accelerate launch --multi_gpu --num_processes 2 --mixed_precision fp16 src/train_qwen_cls.py \
     --config configs/vanilla_qwen.yaml \
     --seed 42 \
     --cache-dir "$HF_HOME"
 
-accelerate launch --num_processes 1 --mixed_precision fp16 src/train_qwen_cls.py \
+accelerate launch --multi_gpu --num_processes 2 --mixed_precision fp16 src/train_qwen_cls.py \
     --config configs/losver_light_tag.yaml \
     --seed 42 \
     --cache-dir "$HF_HOME"
 
-accelerate launch --num_processes 1 --mixed_precision fp16 src/train_qwen_cls.py \
+accelerate launch --multi_gpu --num_processes 2 --mixed_precision fp16 src/train_qwen_cls.py \
     --config configs/losver_light_tag_prefix.yaml \
     --seed 42 \
     --cache-dir "$HF_HOME"
-

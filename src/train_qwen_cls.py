@@ -196,7 +196,11 @@ def main() -> None:
     )
     model.config.pad_token_id = tokenizer.pad_token_id
     model.config.use_cache = False
-    model = prepare_model_for_kbit_training(model)
+    model = prepare_model_for_kbit_training(
+        model,
+        use_gradient_checkpointing=True,
+        gradient_checkpointing_kwargs={"use_reentrant": False},
+    )
 
     lora_cfg = cfg["lora"]
     model = get_peft_model(
@@ -236,6 +240,7 @@ def main() -> None:
         fp16=bool(train_cfg.get("fp16", True)),
         seed=args.seed,
         report_to=[],
+        ddp_find_unused_parameters=False,
     )
 
     trainer = Trainer(
