@@ -10,6 +10,8 @@
 
 开发与实验记录见 [docs/chat-log.md](docs/chat-log.md)。
 
+服务器交接说明见 [docs/server-handoff.md](docs/server-handoff.md)。
+
 ## Current Direction
 
 - Task: function-level vulnerability detection.
@@ -48,7 +50,7 @@ Remote creation requires GitHub authentication, for example `gh auth login` or a
 
 ## Phase 1 Commands
 
-Environment setup and dataset download should be run manually:
+Environment setup and dataset download should be run manually on the Linux GPU server:
 
 ```bash
 conda create -n dlse python=3.10 -y

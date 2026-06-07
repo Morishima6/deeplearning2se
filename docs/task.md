@@ -14,9 +14,10 @@
 - [x] 创建 `docs/task.md` 记录开发进度。
 - [x] 创建 `docs/chat-log.md` 记录开发过程。
 - [x] 初始化本地 Git 仓库。
-- [ ] 创建 GitHub 远端仓库 `deeplearning2se` 并推送。
+- [x] 创建 GitHub 远端仓库 `deeplearning2se` 并推送。
+- [x] 补充服务器实验交接说明 `docs/server-handoff.md`。
 
-GitHub 远端说明：本机当前没有 `gh` 命令，也没有 `GITHUB_TOKEN/GH_TOKEN`。因此已经准备本地仓库与推荐远端地址，但远端创建需要后续完成认证。
+GitHub 远端：`https://github.com/Morishima6/deeplearning2se.git`
 
 ## 1. 研究目标
 
