@@ -43,6 +43,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-train-samples", "--max_train_samples", dest="max_train_samples", type=int, default=None)
     parser.add_argument("--max-eval-samples", "--max_eval_samples", dest="max_eval_samples", type=int, default=None)
     parser.add_argument("--cache-dir", default=HF_CACHE_DIR)
+    parser.add_argument("--run-suffix", default="")
     return parser.parse_args()
 
 
@@ -157,7 +158,7 @@ def main() -> None:
 
     model_name = cfg["model_name"]
     text_field = cfg["text_field"]
-    output_dir = Path(cfg["output_dir"].format(seed=args.seed))
+    output_dir = Path(cfg["output_dir"].format(seed=args.seed) + args.run_suffix)
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "config.json").write_text(json.dumps(cfg, indent=2, ensure_ascii=False), encoding="utf-8")
 
@@ -165,7 +166,12 @@ def main() -> None:
     valid_rows = load_rows(cfg["valid_file"], text_field, args.max_eval_samples)
     test_rows = load_rows(cfg["test_file"], text_field, args.max_eval_samples)
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True, cache_dir=args.cache_dir)
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_name,
+        trust_remote_code=True,
+        cache_dir=args.cache_dir,
+        token=False,
+    )
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
@@ -186,6 +192,7 @@ def main() -> None:
         device_map=device_map,
         trust_remote_code=True,
         cache_dir=args.cache_dir,
+        token=False,
     )
     model.config.pad_token_id = tokenizer.pad_token_id
     model.config.use_cache = False

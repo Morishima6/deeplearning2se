@@ -240,7 +240,7 @@ python src/train_metrics_baseline.py \
 - [x] 配置 4-bit quantization。
 - [x] 配置 LoRA target modules。
 - [x] 支持 `--max_train_samples`、`--max_eval_samples` 做 smoke test。
-- [ ] 先跑小样本 smoke test，确认 loss 下降、无 OOM。
+- [x] 先跑小样本 smoke test，确认 loss 下降、无 OOM。
 - [ ] 再跑 full Vanilla-LLM。
 
 推荐 smoke test：
@@ -278,6 +278,7 @@ accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train
 - [ ] 训练 LOSVER-Light Tag，seed=42。
 - [ ] 训练 LOSVER-Light Tag+Prefix，seed=42。
 - [ ] 汇总 Vanilla、Tag、Tag+Prefix 与 Metrics-Baseline。
+- [x] 新增 `run_qwen_full.sh` 和 `collect_results.sh`，用于正式三组实验和结果汇总。
 
 推荐命令：
 

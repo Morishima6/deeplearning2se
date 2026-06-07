@@ -160,3 +160,23 @@
 - 下一步：
   - 跑 Qwen vanilla smoke test，确认模型加载、cache 路径和训练链路正常。
   - smoke test 成功后跑 full Vanilla、Tag、Tag+Prefix 三组实验。
+
+## 2026-06-07 19:30
+
+- 本次目标：记录 Qwen smoke test 结果，并准备完整 QLoRA 主实验脚本。
+- 已完成：
+  - Qwen2.5-Coder-1.5B 模型成功从镜像下载到 `/mnt/sda/gzx/models/huggingface`。
+  - Vanilla smoke test 跑通：512 train samples，256 eval/test samples，3 epochs。
+  - 新增 `qwen_smoke_test.sh`，并使用 `_smoke` 后缀避免覆盖正式 full run。
+  - 新增 `run_qwen_full.sh`，按 Vanilla、LOSVER-Light Tag、LOSVER-Light Tag+Prefix 顺序跑正式实验。
+  - 新增 `collect_results.sh`，汇总 `main_results.csv`、导出错例并生成主结果图。
+- Smoke test 结果：
+  - 验证集：Accuracy=0.523438，F1=0.672043，ROC-AUC=0.580156。
+  - 测试集：Accuracy=0.535156，F1=0.689295，ROC-AUC=0.525994。
+- 说明：
+  - smoke test 仅用于验证训练链路，样本量小，不能作为正式结果。
+  - 服务器 kernel 版本低于推荐值，正式实验先使用单卡 `--num_processes 1`，降低 DDP hang 风险。
+- 下一步：
+  - 执行 `bash ./run_qwen_full.sh`。
+  - 三组 full run 完成后执行 `bash ./collect_results.sh`。
+  - 将 `reports/tables/main_results.csv` 和错例输出提交到 Git。
