@@ -21,7 +21,8 @@
 - 尚未完成：
   - 服务器环境安装。
   - Devign/CodeXGLUE 数据下载。
-  - Phase 2 行级风险信号脚本。
+  - Phase 2 行级风险信号脚本尚未在服务器数据上实际运行。
+  - Phase 3/4 基线与 QLoRA 实验尚未在服务器上实际运行。
 
 ## 2. 重要协作规则
 
@@ -165,10 +166,11 @@ git push
 
 ## 7. Phase 2 预期任务
 
-Phase 2 要实现：
+Phase 2 脚本已经准备好：
 
 - `src/build_line_signals.py`
-- 可选 `src/extract_code_metrics.py`
+- `src/extract_code_metrics.py`
+- 共享特征工具：`src/code_features.py`
 
 输入：
 
@@ -221,7 +223,92 @@ reports/tables/line_signal_stats.csv
 - 错误处理：`return`、`goto`、`NULL`、`errno`
 - 行长度和符号密度
 
-## 8. 报告写作提醒
+推荐命令：
+
+```bash
+python src/build_line_signals.py \
+  --in data/raw/devign_hf \
+  --out data/processed/devign_losver \
+  --top_k 5 \
+  --stats-out reports/tables
+
+python src/extract_code_metrics.py \
+  --in data/processed/devign_losver \
+  --out reports/tables/code_metrics.csv
+```
+
+成功后应出现：
+
+```text
+data/processed/devign_losver/train.jsonl
+data/processed/devign_losver/valid.jsonl
+data/processed/devign_losver/test.jsonl
+reports/tables/line_signal_stats.csv
+reports/tables/code_metrics.csv
+```
+
+## 8. Phase 3/4 推荐命令
+
+Metrics-Baseline：
+
+```bash
+python src/train_metrics_baseline.py \
+  --train data/processed/devign_losver/train.jsonl \
+  --valid data/processed/devign_losver/valid.jsonl \
+  --test data/processed/devign_losver/test.jsonl \
+  --seed 42
+```
+
+Qwen smoke test：
+
+```bash
+accelerate launch --mixed_precision fp16 src/train_qwen_cls.py \
+  --config configs/vanilla_qwen.yaml \
+  --seed 42 \
+  --max-train-samples 512 \
+  --max-eval-samples 256
+```
+
+完整 QLoRA 实验：
+
+```bash
+accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train_qwen_cls.py \
+  --config configs/vanilla_qwen.yaml \
+  --seed 42
+
+accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train_qwen_cls.py \
+  --config configs/losver_light_tag.yaml \
+  --seed 42
+
+accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train_qwen_cls.py \
+  --config configs/losver_light_tag_prefix.yaml \
+  --seed 42
+```
+
+如果双卡不稳定，先改单卡：
+
+```bash
+accelerate launch --mixed_precision fp16 src/train_qwen_cls.py \
+  --config configs/losver_light_tag.yaml \
+  --seed 42
+```
+
+结果汇总和错例导出：
+
+```bash
+python src/evaluate.py --runs "outputs/run_*" --out reports/tables/main_results.csv
+
+python src/error_analysis.py \
+  --pred outputs/run_losver_prefix_seed42/test_predictions.csv \
+  --data data/processed/devign_losver/test.jsonl \
+  --out reports/tables/error_cases.csv
+
+python src/plot_results.py \
+  --results reports/tables/main_results.csv \
+  --out reports/figures/main_results.png
+```
+
+## 9. 报告写作提醒
 
 课程明确禁止直接复制粘贴 AI 生成内容。Codex 可以辅助形成结构、实验记录和草稿，但最终报告应由学生基于真实实验结果改写、核验和整合。
 
@@ -234,7 +321,7 @@ reports/tables/line_signal_stats.csv
 - 实验设计：RQ、Dataset、Baseline、Metric、Environment。
 - 实验结果、分析和结论。
 
-## 9. 给服务器 Codex 的最短指令
+## 10. 给服务器 Codex 的最短指令
 
 如果要让另一个 Codex 接着做，可以直接给它这段话：
 

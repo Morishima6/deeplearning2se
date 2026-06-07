@@ -61,3 +61,75 @@ pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https
 pip install -r requirements.txt
 python src/export_hf_dataset.py --dataset google/code_x_glue_cc_defect_detection --out data/raw/devign_hf --stats-out reports/tables
 ```
+
+## Phase 2/3 Commands
+
+数据导出成功后，在服务器上继续手动执行：
+
+```bash
+python src/build_line_signals.py \
+  --in data/raw/devign_hf \
+  --out data/processed/devign_losver \
+  --top_k 5 \
+  --stats-out reports/tables
+
+python src/extract_code_metrics.py \
+  --in data/processed/devign_losver \
+  --out reports/tables/code_metrics.csv
+
+python src/train_metrics_baseline.py \
+  --train data/processed/devign_losver/train.jsonl \
+  --valid data/processed/devign_losver/valid.jsonl \
+  --test data/processed/devign_losver/test.jsonl \
+  --seed 42
+```
+
+成功后应重点保留：
+
+```text
+reports/tables/line_signal_stats.csv
+reports/tables/code_metrics.csv
+outputs/run_metrics_seed42/eval.json
+outputs/run_metrics_seed42/test_predictions.csv
+```
+
+汇总结果与导出错例：
+
+```bash
+python src/evaluate.py --runs "outputs/run_*" --out reports/tables/main_results.csv
+python src/error_analysis.py \
+  --pred outputs/run_metrics_seed42/test_predictions.csv \
+  --data data/processed/devign_losver/test.jsonl \
+  --out reports/tables/error_cases.csv
+python src/plot_results.py \
+  --results reports/tables/main_results.csv \
+  --out reports/figures/main_results.png
+```
+
+## QLoRA Commands
+
+先跑 smoke test：
+
+```bash
+accelerate launch --mixed_precision fp16 src/train_qwen_cls.py \
+  --config configs/vanilla_qwen.yaml \
+  --seed 42 \
+  --max-train-samples 512 \
+  --max-eval-samples 256
+```
+
+确认无 OOM 后再跑完整实验：
+
+```bash
+accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train_qwen_cls.py \
+  --config configs/vanilla_qwen.yaml \
+  --seed 42
+
+accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train_qwen_cls.py \
+  --config configs/losver_light_tag.yaml \
+  --seed 42
+
+accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train_qwen_cls.py \
+  --config configs/losver_light_tag_prefix.yaml \
+  --seed 42
+```

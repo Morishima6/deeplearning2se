@@ -156,11 +156,11 @@ python src/export_hf_dataset.py --dataset google/code_x_glue_cc_defect_detection
 
 目标：生成可解释、可复现的风险行标注和代码度量特征。
 
-- [ ] 实现 `src/build_line_signals.py`。
-- [ ] 风险行评分至少包含危险 API、指针/数组、复杂条件、循环、行长度、符号密度等特征。
-- [ ] 支持 `--top_k` 参数，默认 `top_k=5`。
-- [ ] 生成三种文本输入字段：`text_vanilla`、`text_tag`、`text_tag_prefix`。
-- [ ] 实现 `src/extract_code_metrics.py`。
+- [x] 实现 `src/build_line_signals.py`。
+- [x] 风险行评分至少包含危险 API、指针/数组、复杂条件、循环、行长度、符号密度等特征。
+- [x] 支持 `--top_k` 参数，默认 `top_k=5`。
+- [x] 生成三种文本输入字段：`text_vanilla`、`text_tag`、`text_tag_prefix`。
+- [x] 实现 `src/extract_code_metrics.py`。
 - [ ] 输出处理后的 `train.jsonl`、`valid.jsonl`、`test.jsonl`。
 
 风险行评分建议：
@@ -185,11 +185,11 @@ score(line) =
 
 目标：先得到一个快速、稳定的非深度基线。
 
-- [ ] 实现 `src/train_metrics_baseline.py`。
-- [ ] 支持 Logistic Regression。
+- [x] 实现 `src/train_metrics_baseline.py`。
+- [x] 支持 Logistic Regression。
 - [ ] 可选支持 XGBoost；如安装困难则跳过。
-- [ ] 使用验证集选择最佳 F1 阈值。
-- [ ] 在测试集报告 Accuracy、Precision、Recall、F1、ROC-AUC、PR-AUC、Confusion Matrix。
+- [x] 使用验证集选择最佳 F1 阈值。
+- [x] 在测试集报告 Accuracy、Precision、Recall、F1、ROC-AUC、PR-AUC、Confusion Matrix。
 
 推荐命令：
 
@@ -211,12 +211,12 @@ python src/train_metrics_baseline.py \
 
 目标：跑通 Vanilla-LLM 的 smoke test 和 full run。
 
-- [ ] 写 `configs/vanilla_qwen.yaml`。
-- [ ] 实现 `src/train_qwen_cls.py`。
-- [ ] 处理 tokenizer pad token。
-- [ ] 配置 4-bit quantization。
-- [ ] 配置 LoRA target modules。
-- [ ] 支持 `--max_train_samples`、`--max_eval_samples` 做 smoke test。
+- [x] 写 `configs/vanilla_qwen.yaml`。
+- [x] 实现 `src/train_qwen_cls.py`。
+- [x] 处理 tokenizer pad token。
+- [x] 配置 4-bit quantization。
+- [x] 配置 LoRA target modules。
+- [x] 支持 `--max_train_samples`、`--max_eval_samples` 做 smoke test。
 - [ ] 先跑小样本 smoke test，确认 loss 下降、无 OOM。
 - [ ] 再跑 full Vanilla-LLM。
 
@@ -248,8 +248,8 @@ accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train
 
 目标：跑完 Tag 和 Tag+Prefix 两组主方法。
 
-- [ ] 写 `configs/losver_light_tag.yaml`。
-- [ ] 写 `configs/losver_light_tag_prefix.yaml`。
+- [x] 写 `configs/losver_light_tag.yaml`。
+- [x] 写 `configs/losver_light_tag_prefix.yaml`。
 - [ ] 训练 LOSVER-Light Tag，seed=42。
 - [ ] 训练 LOSVER-Light Tag+Prefix，seed=42。
 - [ ] 汇总 Vanilla、Tag、Tag+Prefix 与 Metrics-Baseline。
@@ -278,8 +278,10 @@ accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train
 
 - [ ] 选择验证集表现最好的一组，用 seed=3407 复跑。
 - [ ] 如果时间允许，增加 `top_k=3/8` 或 `max_length=768` 消融。
-- [ ] 实现 `src/error_analysis.py`，导出误报/漏报案例。
+- [x] 实现 `src/error_analysis.py`，导出误报/漏报案例。
 - [ ] 按错误类型标注 10-20 个代表性样本。
+- [x] 实现 `src/evaluate.py` 汇总结果表。
+- [x] 实现 `src/plot_results.py` 生成结果柱状图。
 - [ ] 生成混淆矩阵和结果柱状图。
 
 推荐命令：

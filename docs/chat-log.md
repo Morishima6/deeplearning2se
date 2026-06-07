@@ -94,3 +94,37 @@
 - 说明：
   - `AGENTS.md` 用于约束审查、解释、编程、重构、沟通语言、事实核验和操作边界。
   - 后续协作时，服务器上的 Codex 应同时阅读 `README.md`、`docs/task.md`、`docs/server-handoff.md`、`AGENTS.md` 和 `docs/chat-log.md`。
+
+## 2026-06-07 16:04
+
+- 本次目标：在不代替用户执行服务器安装、下载和训练的前提下，补齐 Phase 2 到 Phase 4 的主要实验脚本。
+- 已完成：
+  - 新增 `src/code_features.py`，集中实现 LOSVER-Light 风险行评分、`<MOD>` 标记、风险行前缀和代码度量特征。
+  - 新增 `src/io_utils.py`，提供 JSONL 读写工具。
+  - 新增 `src/build_line_signals.py`，从 raw JSONL 生成 processed JSONL、`risk_lines`、`text_vanilla`、`text_tag`、`text_tag_prefix` 和 `metrics`。
+  - 新增 `src/extract_code_metrics.py`，导出可用于报告检查的代码度量 CSV。
+  - 新增 `src/train_metrics_baseline.py`，使用 Logistic Regression 训练代码度量基线，并在验证集选择最佳 F1 阈值。
+  - 新增 `src/train_qwen_cls.py`，准备 Qwen2.5-Coder-1.5B + 4-bit QLoRA sequence classification 训练链路。
+  - 新增 `src/evaluate.py`、`src/error_analysis.py`、`src/plot_results.py`，用于汇总实验结果、导出错例和绘制主结果图。
+  - 新增 `configs/vanilla_qwen.yaml`、`configs/losver_light_tag.yaml`、`configs/losver_light_tag_prefix.yaml`。
+  - 更新 `README.md`、`docs/task.md` 和 `docs/server-handoff.md`，补充 Phase 2/3/4 手动运行命令。
+- 关键命令：
+  - 本轮未执行数据下载、模型下载或训练命令。
+- 结果文件：
+  - `src/code_features.py`
+  - `src/io_utils.py`
+  - `src/build_line_signals.py`
+  - `src/extract_code_metrics.py`
+  - `src/train_metrics_baseline.py`
+  - `src/train_qwen_cls.py`
+  - `src/evaluate.py`
+  - `src/error_analysis.py`
+  - `src/plot_results.py`
+  - `src/utils_seed.py`
+  - `configs/*.yaml`
+- 遇到的问题：
+  - 当前本地没有 `data/raw/devign_hf`，因此只能做语法与脚本结构检查，不能验证真实数据处理结果。
+- 下一步：
+  - 用户在服务器手动运行 Phase 1 数据导出命令。
+  - 数据导出成功后手动运行 `build_line_signals.py`、`extract_code_metrics.py` 和 `train_metrics_baseline.py`。
+  - 若 metrics baseline 正常，再先跑 Qwen smoke test，最后跑三组完整 QLoRA 实验。
