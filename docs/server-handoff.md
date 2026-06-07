@@ -5,7 +5,8 @@
 1. `README.md`
 2. `docs/task.md`
 3. `docs/server-handoff.md`
-4. `docs/chat-log.md`
+4. `AGENTS.md`
+5. `docs/chat-log.md`
 
 ## 1. 当前状态
 
@@ -26,6 +27,7 @@
 
 如果在服务器上使用 Codex，请遵守以下规则：
 
+- 先阅读 `AGENTS.md`，它是本项目的协作规范。
 - 安装、配环境、下载数据、跑训练等操作不要由 Codex 擅自执行，除非用户明确授权。
 - Codex 可以编写和修改脚本、配置、README、docs，并维护 git commit。
 - `data/`、`outputs/`、模型权重、训练日志默认不提交到普通 Git。
@@ -238,6 +240,7 @@ reports/tables/line_signal_stats.csv
 
 ```text
 请阅读 README.md、docs/task.md、docs/server-handoff.md 和 docs/chat-log.md。
+同时阅读 AGENTS.md，并把它作为本项目协作规范。
 当前项目是深度学习课程大作业 deeplearning2se，主题是基于 LOSVER-Light 的函数级漏洞检测。
 请不要擅自执行安装、配环境、下载数据或训练命令；这些命令只提供给我手动运行。
 你可以编写脚本、配置和文档，并维护 git。

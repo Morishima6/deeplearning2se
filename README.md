@@ -12,6 +12,8 @@
 
 服务器交接说明见 [docs/server-handoff.md](docs/server-handoff.md)。
 
+项目协作规范见 [AGENTS.md](AGENTS.md)。
+
 ## Current Direction
 
 - Task: function-level vulnerability detection.

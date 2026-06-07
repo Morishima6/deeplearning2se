@@ -83,3 +83,14 @@
   - 在服务器 clone 仓库。
   - 手动执行 `docs/server-handoff.md` 中的 Phase 1 命令。
   - 若数据导出成功，进入 Phase 2；若失败，把完整报错交给 Codex 修正。
+
+## 2026-06-07 纳入项目协作规范
+
+- 本次目标：把用户提供的 `AGENTS.md` 作为本项目协作规范纳入仓库。
+- 已完成：
+  - 将 `AGENTS.md` 加入版本库。
+  - 在 `README.md` 中增加 `AGENTS.md` 入口。
+  - 在 `docs/server-handoff.md` 中要求服务器 Codex 先阅读 `AGENTS.md`。
+- 说明：
+  - `AGENTS.md` 用于约束审查、解释、编程、重构、沟通语言、事实核验和操作边界。
+  - 后续协作时，服务器上的 Codex 应同时阅读 `README.md`、`docs/task.md`、`docs/server-handoff.md`、`AGENTS.md` 和 `docs/chat-log.md`。
