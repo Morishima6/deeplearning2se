@@ -23,6 +23,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 from io_utils import read_jsonl
+from paths import DATA_ROOT, MODEL_ROOT
 
 
 DEFAULT_FEATURES = (
@@ -46,9 +47,9 @@ DEFAULT_FEATURES = (
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--train", default="data/processed/devign_losver/train.jsonl")
-    parser.add_argument("--valid", default="data/processed/devign_losver/valid.jsonl")
-    parser.add_argument("--test", default="data/processed/devign_losver/test.jsonl")
+    parser.add_argument("--train", default=f"{DATA_ROOT}/processed/devign_losver/train.jsonl")
+    parser.add_argument("--valid", default=f"{DATA_ROOT}/processed/devign_losver/valid.jsonl")
+    parser.add_argument("--test", default=f"{DATA_ROOT}/processed/devign_losver/test.jsonl")
     parser.add_argument("--out-dir", default=None)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--max-iter", type=int, default=1000)
@@ -133,7 +134,7 @@ def write_predictions(rows: list[dict[str, Any]], y_score: np.ndarray, threshold
 
 def main() -> None:
     args = parse_args()
-    out_dir = Path(args.out_dir or f"outputs/run_metrics_seed{args.seed}")
+    out_dir = Path(args.out_dir or f"{MODEL_ROOT}/outputs/run_metrics_seed{args.seed}")
     out_dir.mkdir(parents=True, exist_ok=True)
 
     x_train, y_train, _ = load_xy(Path(args.train))
@@ -179,4 +180,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

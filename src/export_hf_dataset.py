@@ -17,6 +17,8 @@ from typing import Any, Iterable
 
 from datasets import Dataset, DatasetDict, load_dataset
 
+from paths import DATA_ROOT, HF_CACHE_DIR
+
 
 CODE_COLUMNS = ("func", "code", "function", "source", "input", "text")
 LABEL_COLUMNS = ("target", "label", "labels", "is_vulnerable", "vul")
@@ -41,8 +43,13 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--out",
-        default="data/raw/devign_hf",
+        default=f"{DATA_ROOT}/raw/devign_hf",
         help="Output directory for JSONL splits and stats.",
+    )
+    parser.add_argument(
+        "--cache-dir",
+        default=HF_CACHE_DIR,
+        help="Hugging Face dataset cache directory. Keep it outside the project/root.",
     )
     parser.add_argument(
         "--stats-out",
@@ -171,6 +178,8 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     load_kwargs: dict[str, Any] = {}
+    if args.cache_dir:
+        load_kwargs["cache_dir"] = args.cache_dir
     if args.trust_remote_code:
         load_kwargs["trust_remote_code"] = True
 

@@ -9,6 +9,7 @@ from typing import Any
 
 from code_features import extract_metrics, rank_risk_lines
 from io_utils import read_jsonl
+from paths import DATA_ROOT
 
 
 SPLITS = ("train", "valid", "test")
@@ -16,7 +17,7 @@ SPLITS = ("train", "valid", "test")
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--in-dir", "--in", dest="in_dir", default="data/processed/devign_losver")
+    parser.add_argument("--in-dir", "--in", dest="in_dir", default=f"{DATA_ROOT}/processed/devign_losver")
     parser.add_argument("--out", default="reports/tables/code_metrics.csv")
     parser.add_argument("--top-k", "--top_k", dest="top_k", type=int, default=5)
     return parser.parse_args()
@@ -62,4 +63,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -24,6 +24,21 @@
   - Phase 2 行级风险信号脚本尚未在服务器数据上实际运行。
   - Phase 3/4 基线与 QLoRA 实验尚未在服务器上实际运行。
 
+## 1.1 大文件存储约定
+
+严禁把数据集、模型权重、Hugging Face cache、adapter checkpoint 直接放在当前项目目录或 root 目录。服务器统一使用：
+
+```bash
+export DLSE_DATA_ROOT=/mnt/sda/gzx/data/deeplearning2se
+export DLSE_MODEL_ROOT=/mnt/sda/gzx/models/deeplearning2se
+export HF_HOME=/mnt/sda/gzx/models/huggingface
+export HF_DATASETS_CACHE=/mnt/sda/gzx/models/huggingface/datasets
+export TRANSFORMERS_CACHE=/mnt/sda/gzx/models/huggingface/transformers
+mkdir -p "$DLSE_DATA_ROOT" "$DLSE_MODEL_ROOT" "$HF_HOME" "$HF_DATASETS_CACHE" "$TRANSFORMERS_CACHE"
+```
+
+脚本默认也会读取这些环境变量；如果没有设置，默认仍指向 `/mnt/sda/gzx/data/deeplearning2se`、`/mnt/sda/gzx/models/deeplearning2se` 和 `/mnt/sda/gzx/models/huggingface`。
+
 ## 2. 重要协作规则
 
 如果在服务器上使用 Codex，请遵守以下规则：
@@ -32,6 +47,7 @@
 - 安装、配环境、下载数据、跑训练等操作不要由 Codex 擅自执行，除非用户明确授权。
 - Codex 可以编写和修改脚本、配置、README、docs，并维护 git commit。
 - `data/`、`outputs/`、模型权重、训练日志默认不提交到普通 Git。
+- 大文件放到 `/mnt/sda/gzx/data` 和 `/mnt/sda/gzx/models`，不要放项目目录或 root。
 - 可提交的结果文件优先放在：
   - `reports/tables/*.csv`
   - `reports/tables/*.json`
@@ -54,7 +70,7 @@ Linux 服务器
   安装环境、下载数据、训练模型、生成结果
 ```
 
-服务器不要把完整 `data/`、`outputs/`、adapter 权重直接提交到普通 Git。如果需要保存 adapter，建议单独压缩留在服务器、网盘或后续使用 Git LFS。
+服务器不要把完整数据、outputs、adapter 权重直接提交到普通 Git。如果需要保存 adapter，建议留在 `/mnt/sda/gzx/models`、网盘或后续使用 Git LFS。
 
 ## 4. 服务器 Phase 1 手动命令
 
@@ -69,6 +85,13 @@ conda activate dlse
 
 pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121
 pip install -r requirements.txt
+
+export DLSE_DATA_ROOT=/mnt/sda/gzx/data/deeplearning2se
+export DLSE_MODEL_ROOT=/mnt/sda/gzx/models/deeplearning2se
+export HF_HOME=/mnt/sda/gzx/models/huggingface
+export HF_DATASETS_CACHE=/mnt/sda/gzx/models/huggingface/datasets
+export TRANSFORMERS_CACHE=/mnt/sda/gzx/models/huggingface/transformers
+mkdir -p "$DLSE_DATA_ROOT" "$DLSE_MODEL_ROOT" "$HF_HOME" "$HF_DATASETS_CACHE" "$TRANSFORMERS_CACHE"
 ```
 
 检查 GPU 与 PyTorch：
@@ -91,17 +114,18 @@ PY
 ```bash
 python src/export_hf_dataset.py \
   --dataset google/code_x_glue_cc_defect_detection \
-  --out data/raw/devign_hf \
+  --out "$DLSE_DATA_ROOT/raw/devign_hf" \
+  --cache-dir "$HF_DATASETS_CACHE" \
   --stats-out reports/tables
 ```
 
 成功后应出现：
 
 ```text
-data/raw/devign_hf/train.jsonl
-data/raw/devign_hf/valid.jsonl
-data/raw/devign_hf/test.jsonl
-data/raw/devign_hf/dataset_stats.csv
+$DLSE_DATA_ROOT/raw/devign_hf/train.jsonl
+$DLSE_DATA_ROOT/raw/devign_hf/valid.jsonl
+$DLSE_DATA_ROOT/raw/devign_hf/test.jsonl
+$DLSE_DATA_ROOT/raw/devign_hf/dataset_stats.csv
 reports/tables/dataset_stats.csv
 ```
 
@@ -120,7 +144,8 @@ Hugging Face 数据集 ID 可能因为镜像、缓存或版本变化而不同。
 ```bash
 python src/export_hf_dataset.py \
   --dataset google/code_x_glue_cc_defect_detection \
-  --out data/raw/devign_hf \
+  --out "$DLSE_DATA_ROOT/raw/devign_hf" \
+  --cache-dir "$HF_DATASETS_CACHE" \
   --stats-out reports/tables \
   --trust-remote-code
 ```
@@ -128,7 +153,8 @@ python src/export_hf_dataset.py \
 ```bash
 python src/export_hf_dataset.py \
   --dataset code_x_glue_cc_defect_detection \
-  --out data/raw/devign_hf \
+  --out "$DLSE_DATA_ROOT/raw/devign_hf" \
+  --cache-dir "$HF_DATASETS_CACHE" \
   --stats-out reports/tables
 ```
 
@@ -139,7 +165,8 @@ python src/export_hf_dataset.py \
   --dataset DATASET_ID_HERE \
   --code-column func \
   --label-column target \
-  --out data/raw/devign_hf \
+  --out "$DLSE_DATA_ROOT/raw/devign_hf" \
+  --cache-dir "$HF_DATASETS_CACHE" \
   --stats-out reports/tables
 ```
 
@@ -147,9 +174,9 @@ python src/export_hf_dataset.py \
 
 Phase 1 完成条件：
 
-- `data/raw/devign_hf/train.jsonl` 存在。
-- `data/raw/devign_hf/valid.jsonl` 存在。
-- `data/raw/devign_hf/test.jsonl` 存在。
+- `$DLSE_DATA_ROOT/raw/devign_hf/train.jsonl` 存在。
+- `$DLSE_DATA_ROOT/raw/devign_hf/valid.jsonl` 存在。
+- `$DLSE_DATA_ROOT/raw/devign_hf/test.jsonl` 存在。
 - `reports/tables/dataset_stats.csv` 存在。
 - `dataset_stats.csv` 中 train/valid/test 数量合理。
 
@@ -175,17 +202,17 @@ Phase 2 脚本已经准备好：
 输入：
 
 ```text
-data/raw/devign_hf/train.jsonl
-data/raw/devign_hf/valid.jsonl
-data/raw/devign_hf/test.jsonl
+$DLSE_DATA_ROOT/raw/devign_hf/train.jsonl
+$DLSE_DATA_ROOT/raw/devign_hf/valid.jsonl
+$DLSE_DATA_ROOT/raw/devign_hf/test.jsonl
 ```
 
 输出：
 
 ```text
-data/processed/devign_losver/train.jsonl
-data/processed/devign_losver/valid.jsonl
-data/processed/devign_losver/test.jsonl
+$DLSE_DATA_ROOT/processed/devign_losver/train.jsonl
+$DLSE_DATA_ROOT/processed/devign_losver/valid.jsonl
+$DLSE_DATA_ROOT/processed/devign_losver/test.jsonl
 reports/tables/line_signal_stats.csv
 ```
 
@@ -227,22 +254,22 @@ reports/tables/line_signal_stats.csv
 
 ```bash
 python src/build_line_signals.py \
-  --in data/raw/devign_hf \
-  --out data/processed/devign_losver \
+  --in "$DLSE_DATA_ROOT/raw/devign_hf" \
+  --out "$DLSE_DATA_ROOT/processed/devign_losver" \
   --top_k 5 \
   --stats-out reports/tables
 
 python src/extract_code_metrics.py \
-  --in data/processed/devign_losver \
+  --in "$DLSE_DATA_ROOT/processed/devign_losver" \
   --out reports/tables/code_metrics.csv
 ```
 
 成功后应出现：
 
 ```text
-data/processed/devign_losver/train.jsonl
-data/processed/devign_losver/valid.jsonl
-data/processed/devign_losver/test.jsonl
+$DLSE_DATA_ROOT/processed/devign_losver/train.jsonl
+$DLSE_DATA_ROOT/processed/devign_losver/valid.jsonl
+$DLSE_DATA_ROOT/processed/devign_losver/test.jsonl
 reports/tables/line_signal_stats.csv
 reports/tables/code_metrics.csv
 ```
@@ -253,9 +280,10 @@ Metrics-Baseline：
 
 ```bash
 python src/train_metrics_baseline.py \
-  --train data/processed/devign_losver/train.jsonl \
-  --valid data/processed/devign_losver/valid.jsonl \
-  --test data/processed/devign_losver/test.jsonl \
+  --train "$DLSE_DATA_ROOT/processed/devign_losver/train.jsonl" \
+  --valid "$DLSE_DATA_ROOT/processed/devign_losver/valid.jsonl" \
+  --test "$DLSE_DATA_ROOT/processed/devign_losver/test.jsonl" \
+  --out-dir "$DLSE_MODEL_ROOT/outputs/run_metrics_seed42" \
   --seed 42
 ```
 
@@ -265,6 +293,7 @@ Qwen smoke test：
 accelerate launch --mixed_precision fp16 src/train_qwen_cls.py \
   --config configs/vanilla_qwen.yaml \
   --seed 42 \
+  --cache-dir "$HF_HOME" \
   --max-train-samples 512 \
   --max-eval-samples 256
 ```
@@ -274,15 +303,18 @@ accelerate launch --mixed_precision fp16 src/train_qwen_cls.py \
 ```bash
 accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train_qwen_cls.py \
   --config configs/vanilla_qwen.yaml \
-  --seed 42
+  --seed 42 \
+  --cache-dir "$HF_HOME"
 
 accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train_qwen_cls.py \
   --config configs/losver_light_tag.yaml \
-  --seed 42
+  --seed 42 \
+  --cache-dir "$HF_HOME"
 
 accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train_qwen_cls.py \
   --config configs/losver_light_tag_prefix.yaml \
-  --seed 42
+  --seed 42 \
+  --cache-dir "$HF_HOME"
 ```
 
 如果双卡不稳定，先改单卡：
@@ -290,17 +322,18 @@ accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train
 ```bash
 accelerate launch --mixed_precision fp16 src/train_qwen_cls.py \
   --config configs/losver_light_tag.yaml \
-  --seed 42
+  --seed 42 \
+  --cache-dir "$HF_HOME"
 ```
 
 结果汇总和错例导出：
 
 ```bash
-python src/evaluate.py --runs "outputs/run_*" --out reports/tables/main_results.csv
+python src/evaluate.py --runs "$DLSE_MODEL_ROOT/outputs/run_*" --out reports/tables/main_results.csv
 
 python src/error_analysis.py \
-  --pred outputs/run_losver_prefix_seed42/test_predictions.csv \
-  --data data/processed/devign_losver/test.jsonl \
+  --pred "$DLSE_MODEL_ROOT/outputs/run_losver_prefix_seed42/test_predictions.csv" \
+  --data "$DLSE_DATA_ROOT/processed/devign_losver/test.jsonl" \
   --out reports/tables/error_cases.csv
 
 python src/plot_results.py \

@@ -8,12 +8,13 @@ from pathlib import Path
 from typing import Any
 
 from io_utils import read_jsonl
+from paths import DATA_ROOT
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--pred", required=True)
-    parser.add_argument("--data", default="data/processed/devign_losver/test.jsonl")
+    parser.add_argument("--data", default=f"{DATA_ROOT}/processed/devign_losver/test.jsonl")
     parser.add_argument("--out", default="reports/tables/error_cases.csv")
     parser.add_argument("--limit", type=int, default=40)
     return parser.parse_args()
@@ -71,4 +72,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

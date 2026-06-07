@@ -120,7 +120,7 @@ deeplearning2se/
     tables/
 ```
 
-注意：`data/`、`outputs/`、模型权重和日志默认不提交到 Git。
+注意：`data/`、`outputs/`、模型权重和日志默认不提交到 Git。服务器大文件统一存放到 `/mnt/sda/gzx/data/deeplearning2se` 和 `/mnt/sda/gzx/models/deeplearning2se`，Hugging Face cache 使用 `/mnt/sda/gzx/models/huggingface`。
 
 ## 5. 阶段计划
 
@@ -143,12 +143,33 @@ conda create -n dlse python=3.10 -y
 conda activate dlse
 pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121
 pip install -r requirements.txt
-python src/export_hf_dataset.py --dataset google/code_x_glue_cc_defect_detection --out data/raw/devign_hf --stats-out reports/tables
+python src/export_hf_dataset.py \
+  --dataset google/code_x_glue_cc_defect_detection \
+  --out "$DLSE_DATA_ROOT/raw/devign_hf" \
+  --cache-dir "$HF_DATASETS_CACHE" \
+  --stats-out reports/tables
+```
+
+服务器实际运行时优先使用外部存储：
+
+```bash
+export DLSE_DATA_ROOT=/mnt/sda/gzx/data/deeplearning2se
+export DLSE_MODEL_ROOT=/mnt/sda/gzx/models/deeplearning2se
+export HF_HOME=/mnt/sda/gzx/models/huggingface
+export HF_DATASETS_CACHE=/mnt/sda/gzx/models/huggingface/datasets
+export TRANSFORMERS_CACHE=/mnt/sda/gzx/models/huggingface/transformers
+mkdir -p "$DLSE_DATA_ROOT" "$DLSE_MODEL_ROOT" "$HF_HOME" "$HF_DATASETS_CACHE" "$TRANSFORMERS_CACHE"
+
+python src/export_hf_dataset.py \
+  --dataset google/code_x_glue_cc_defect_detection \
+  --out "$DLSE_DATA_ROOT/raw/devign_hf" \
+  --cache-dir "$HF_DATASETS_CACHE" \
+  --stats-out reports/tables
 ```
 
 验收标准：
 
-- [ ] `python src/export_hf_dataset.py ...` 能成功生成 `data/raw/devign_hf/`。
+- [ ] `python src/export_hf_dataset.py ...` 能成功生成 `$DLSE_DATA_ROOT/raw/devign_hf/`。
 - [ ] `reports/tables/dataset_stats.csv` 中有 split、label count、平均长度等统计。
 - [x] README 中能说明如何复现数据准备。
 
@@ -195,16 +216,17 @@ score(line) =
 
 ```bash
 python src/train_metrics_baseline.py \
-  --train data/processed/devign_losver/train.jsonl \
-  --valid data/processed/devign_losver/valid.jsonl \
-  --test data/processed/devign_losver/test.jsonl \
+  --train "$DLSE_DATA_ROOT/processed/devign_losver/train.jsonl" \
+  --valid "$DLSE_DATA_ROOT/processed/devign_losver/valid.jsonl" \
+  --test "$DLSE_DATA_ROOT/processed/devign_losver/test.jsonl" \
+  --out-dir "$DLSE_MODEL_ROOT/outputs/run_metrics_seed42" \
   --seed 42
 ```
 
 验收标准：
 
-- [ ] `outputs/run_metrics_seed42/eval.json` 存在。
-- [ ] `outputs/run_metrics_seed42/test_predictions.csv` 存在。
+- [ ] `$DLSE_MODEL_ROOT/outputs/run_metrics_seed42/eval.json` 存在。
+- [ ] `$DLSE_MODEL_ROOT/outputs/run_metrics_seed42/test_predictions.csv` 存在。
 - [ ] 指标表可直接放入报告。
 
 ### Phase 4：Qwen2.5-Coder QLoRA 训练链路
@@ -226,6 +248,7 @@ python src/train_metrics_baseline.py \
 accelerate launch --mixed_precision fp16 src/train_qwen_cls.py \
   --config configs/vanilla_qwen.yaml \
   --seed 42 \
+  --cache-dir "$HF_HOME" \
   --max_train_samples 512 \
   --max_eval_samples 256
 ```
@@ -235,7 +258,8 @@ accelerate launch --mixed_precision fp16 src/train_qwen_cls.py \
 ```bash
 accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train_qwen_cls.py \
   --config configs/vanilla_qwen.yaml \
-  --seed 42
+  --seed 42 \
+  --cache-dir "$HF_HOME"
 ```
 
 验收标准：
@@ -259,11 +283,13 @@ accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train
 ```bash
 accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train_qwen_cls.py \
   --config configs/losver_light_tag.yaml \
-  --seed 42
+  --seed 42 \
+  --cache-dir "$HF_HOME"
 
 accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train_qwen_cls.py \
   --config configs/losver_light_tag_prefix.yaml \
-  --seed 42
+  --seed 42 \
+  --cache-dir "$HF_HOME"
 ```
 
 验收标准：
@@ -287,9 +313,12 @@ accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train
 推荐命令：
 
 ```bash
-python src/evaluate.py --runs outputs/run_* --metric best_f1
-python src/error_analysis.py --pred outputs/run_losver_prefix_seed42/test_predictions.csv --out reports/tables/error_cases.xlsx
-python src/plot_results.py --runs outputs/run_* --out reports/figures
+python src/evaluate.py --runs "$DLSE_MODEL_ROOT/outputs/run_*" --out reports/tables/main_results.csv
+python src/error_analysis.py \
+  --pred "$DLSE_MODEL_ROOT/outputs/run_losver_prefix_seed42/test_predictions.csv" \
+  --data "$DLSE_DATA_ROOT/processed/devign_losver/test.jsonl" \
+  --out reports/tables/error_cases.csv
+python src/plot_results.py --results reports/tables/main_results.csv --out reports/figures/main_results.png
 ```
 
 验收标准：

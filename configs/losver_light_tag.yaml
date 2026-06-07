@@ -1,9 +1,9 @@
 model_name: Qwen/Qwen2.5-Coder-1.5B
 text_field: text_tag
-train_file: data/processed/devign_losver/train.jsonl
-valid_file: data/processed/devign_losver/valid.jsonl
-test_file: data/processed/devign_losver/test.jsonl
-output_dir: outputs/run_losver_tag_seed{seed}
+train_file: /mnt/sda/gzx/data/deeplearning2se/processed/devign_losver/train.jsonl
+valid_file: /mnt/sda/gzx/data/deeplearning2se/processed/devign_losver/valid.jsonl
+test_file: /mnt/sda/gzx/data/deeplearning2se/processed/devign_losver/test.jsonl
+output_dir: /mnt/sda/gzx/models/deeplearning2se/outputs/run_losver_tag_seed{seed}
 max_length: 512
 
 lora:
@@ -29,4 +29,3 @@ training:
   warmup_ratio: 0.05
   logging_steps: 25
   fp16: true
-

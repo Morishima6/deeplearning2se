@@ -32,6 +32,7 @@ from transformers import (
 )
 
 from io_utils import read_jsonl
+from paths import HF_CACHE_DIR
 from utils_seed import set_seed
 
 
@@ -41,6 +42,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--max-train-samples", "--max_train_samples", dest="max_train_samples", type=int, default=None)
     parser.add_argument("--max-eval-samples", "--max_eval_samples", dest="max_eval_samples", type=int, default=None)
+    parser.add_argument("--cache-dir", default=HF_CACHE_DIR)
     return parser.parse_args()
 
 
@@ -163,7 +165,7 @@ def main() -> None:
     valid_rows = load_rows(cfg["valid_file"], text_field, args.max_eval_samples)
     test_rows = load_rows(cfg["test_file"], text_field, args.max_eval_samples)
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True, cache_dir=args.cache_dir)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
@@ -183,6 +185,7 @@ def main() -> None:
         quantization_config=quant_config,
         device_map=device_map,
         trust_remote_code=True,
+        cache_dir=args.cache_dir,
     )
     model.config.pad_token_id = tokenizer.pad_token_id
     model.config.use_cache = False

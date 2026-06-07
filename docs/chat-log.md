@@ -128,3 +128,16 @@
   - 用户在服务器手动运行 Phase 1 数据导出命令。
   - 数据导出成功后手动运行 `build_line_signals.py`、`extract_code_metrics.py` 和 `train_metrics_baseline.py`。
   - 若 metrics baseline 正常，再先跑 Qwen smoke test，最后跑三组完整 QLoRA 实验。
+
+## 2026-06-07 16:20
+
+- 本次目标：检查并修正大文件落盘路径，避免数据集、模型权重和 Hugging Face cache 存在当前项目目录或 root 目录。
+- 已完成：
+  - 新增 `src/paths.py`，统一定义 `DLSE_DATA_ROOT`、`DLSE_MODEL_ROOT` 和 `HF_HOME` 默认路径。
+  - 将数据默认路径改为 `/mnt/sda/gzx/data/deeplearning2se`。
+  - 将训练输出、adapter 和 checkpoint 默认路径改为 `/mnt/sda/gzx/models/deeplearning2se`。
+  - 将 Hugging Face cache 默认路径改为 `/mnt/sda/gzx/models/huggingface`，并为数据导出和模型加载脚本增加 `--cache-dir`。
+  - 更新 README、任务文档和服务器交接文档中的执行命令。
+- 关键约束：
+  - 轻量报告文件仍可写入仓库内 `reports/`。
+  - `data/`、`outputs/` 仅作为忽略占位，不作为服务器实际大文件存储位置。
