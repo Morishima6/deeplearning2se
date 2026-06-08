@@ -1,0 +1,1779 @@
+id,error_type,label,prediction,prob_vulnerable,num_lines,num_dangerous_api,max_risk_score,risk_line_summary,code_excerpt
+10104,FN,1,0,0.05837267,46,0,2.9,"L43:2.9:rtas_st(rets, 7, 0); /* we don't do nanoseconds */ | L15:1.8:if (nret != 8) { | L1:1.5:static void rtas_get_time_of_day(PowerPCCPU *cpu, sPAPREnvironment *spapr, | L25:1.5:qemu_get_timedate(&tm, spapr->rtc_offset); | L9:0.8:{","static void rtas_get_time_of_day(PowerPCCPU *cpu, sPAPREnvironment *spapr,
+
+                                 uint32_t token, uint32_t nargs,
+
+                                 target_ulong args,
+
+                                 uint32_t nret, target_ulong rets)
+
+{
+
+    struct tm tm;
+
+
+
+    if (nret != 8) {
+
+        rtas_st(rets, 0, RTAS_OUT_PARAM_ERROR);
+
+        return;
+
+    }
+
+
+
+    qemu_get_timedate(&tm, spapr->rtc_offset);
+
+
+
+    rtas_st(rets, 0, RTAS_OUT_SUCCESS);
+
+    rtas_st(rets, 1, tm.tm_year + 1900);
+
+    rtas_st(rets, 2, tm.tm_mon + 1);
+
+    rtas_st(rets, 3, tm.tm_mday);
+
+    rtas_st(rets, 4, tm.tm_hour);
+
+    rtas_st(rets, 5, tm.tm_min);
+
+    rtas_st(rets, 6, tm.tm_sec);
+
+    rtas_st(rets, 7, 0); /* we don't do nanoseconds */
+
+}
+"
+10416,FN,1,0,0.11348131,90,0,2.9,"L39:2.9:if ((p->flags & PAGE_WRITE_ORG) && !(p->flags & PAGE_WRITE)) { | L35:2.5:/* if the page was really writable, then we change its | L55:2.3:prot |= p->flags; | L53:1.9:p->flags |= PAGE_WRITE; | L25:1.8:if (!p) {","int page_unprotect(target_ulong address, uintptr_t pc, void *puc)
+
+{
+
+    unsigned int prot;
+
+    PageDesc *p;
+
+    target_ulong host_start, host_end, addr;
+
+
+
+    /* Technically this isn't safe inside a signal handler.  However we
+
+       know this only ever happens in a synchronous SEGV handler, so in
+
+       practice it seems to be ok.  */
+
+    mmap_lock();
+
+
+
+    p = page_find(address >> TARGET_PAGE_BITS);
+
+    if (!p) {
+
+        mmap_unlock();
+
+        return 0;
+
+    }
+
+
+
+    /* if the page was really writable, then we change its
+
+       protection back to writable */
+
+    if ((p->flags & PAGE_WRITE_ORG) && !(p->flags & PAGE_WRITE)) {
+
+        host_start = address & qemu_host_page_mask;
+
+        host_end = host_start + qemu_host_page_size;
+
+
+
+        prot = 0;
+
+        for (addr = host_start ; addr < host_end ; addr += TARGET_PAGE_SIZE) {
+
+            p = page_find(addr >> TARGET_PAGE_BITS);
+
+            p->flags |= PAGE_WRITE;
+
+            prot |= p->flags;
+
+
+
+            /* and since the content will be modified, we must invalidate
+
+               the corresponding translated code. */
+
+            tb_invalidate_phys_page(addr, pc, puc);
+
+#ifdef DEBUG_TB_CHECK
+
+            tb"
+10504,FN,1,0,0.17161581,614,0,3.3,L11:3.3:if (ctx->pc & 0x1) { | L201:2.9:switch (ctx->opcode & 0x1) { | L241:2.9:switch (ctx->opcode & 0x1) { | L291:2.9:if (ctx->opcode & 1) { | L503:2.9:switch (ctx->opcode & 0x1) {,"static int decode_micromips_opc (CPUMIPSState *env, DisasContext *ctx, int *is_branch)
+
+{
+
+    uint32_t op;
+
+
+
+    /* make sure instructions are on a halfword boundary */
+
+    if (ctx->pc & 0x1) {
+
+        env->CP0_BadVAddr = ctx->pc;
+
+        generate_exception(ctx, EXCP_AdEL);
+
+        ctx->bstate = BS_STOP;
+
+        return 2;
+
+    }
+
+
+
+    op = (ctx->opcode >> 10) & 0x3f;
+
+    /* Enforce properly-sized instructions in a delay slot */
+
+    if (ctx->hflags & MIPS_HFLAG_BMASK) {
+
+        int bits = ctx->hflags & MIPS_HFLAG_BMASK_EXT;
+
+
+
+        switch (op) {
+
+        case POOL32A:
+
+        case POOL32B:
+
+        case POOL32I:
+
+        case POOL32C:
+
+        case ADDI32:
+
+        case ADDIU32:
+
+        case ORI32:
+
+        case XORI32:
+
+        case SLTI32:
+
+        case SLTIU32:
+
+        case ANDI32:
+
+        case JALX32:
+
+        case LBU32:
+
+        case LHU32:
+
+        case POOL32F:
+
+        case JALS32:
+
+        case BEQ32:
+
+        case BNE32:
+
+        case J32:
+
+        case JAL32:
+
+        case SB32:
+
+        case SH32:
+
+        case POOL32S:
+
+        case ADDIUPC:
+
+        case SWC132:
+
+        case SDC132:
+
+        case SD32:
+
+        case SW32:
+
+        case LB32:
+
+      "
+10847,FN,1,0,0.10717437,32,0,2.9,L23:2.9:/* After a while... (but sooner than 10ms) */ | L9:2.3:s->in_len = 0; | L13:2.3:s->enable = 0; | L5:1.9:s->out_len = 0; | L15:1.9:s->in_hdr = INT_MAX;,"static void csrhci_reset(struct csrhci_s *s)
+
+{
+
+    s->out_len = 0;
+
+    s->out_size = FIFO_LEN;
+
+    s->in_len = 0;
+
+    s->baud_delay = NANOSECONDS_PER_SECOND;
+
+    s->enable = 0;
+
+    s->in_hdr = INT_MAX;
+
+    s->in_data = INT_MAX;
+
+
+
+    s->modem_state = 0;
+
+    /* After a while... (but sooner than 10ms) */
+
+    s->modem_state |= CHR_TIOCM_CTS;
+
+
+
+    memset(&s->bd_addr, 0, sizeof(bdaddr_t));
+
+}
+"
+11865,FN,1,0,0.11294208,20,0,1.5,"L1:1.5:ram_addr_t qemu_ram_addr_from_host_nofail(void *ptr) | L9:1.0:if (qemu_ram_addr_from_host(ptr, &ram_addr)) { | L3:0.8:{ | L13:0.8:abort(); | L15:0.8:}","ram_addr_t qemu_ram_addr_from_host_nofail(void *ptr)
+
+{
+
+    ram_addr_t ram_addr;
+
+
+
+    if (qemu_ram_addr_from_host(ptr, &ram_addr)) {
+
+        fprintf(stderr, ""Bad ram pointer %p\n"", ptr);
+
+        abort();
+
+    }
+
+    return ram_addr;
+
+}
+"
+12182,FN,1,0,0.16271237,8,0,2.7,L5:2.7:return obj->class->type->name; | L1:1.5:const char *object_get_typename(Object *obj) | L3:0.8:{ | L7:0.8:},"const char *object_get_typename(Object *obj)
+
+{
+
+    return obj->class->type->name;
+
+}
+"
+12243,FN,1,0,0.12426614,40,0,2.3,"L7:2.3:BdrvNextIterator *it = NULL; | L13:2.2:while ((it = bdrv_next(it, &bs)) != NULL) { | L1:1.5:bool bdrv_is_first_non_filter(BlockDriverState *candidate) | L5:1.5:BlockDriverState *bs; | L11:1.5:/* walk down the bs forest recursively */","bool bdrv_is_first_non_filter(BlockDriverState *candidate)
+
+{
+
+    BlockDriverState *bs;
+
+    BdrvNextIterator *it = NULL;
+
+
+
+    /* walk down the bs forest recursively */
+
+    while ((it = bdrv_next(it, &bs)) != NULL) {
+
+        bool perm;
+
+
+
+        /* try to recurse in this top level bs */
+
+        perm = bdrv_recurse_is_first_non_filter(bs, candidate);
+
+
+
+        /* candidate is the first non filter */
+
+        if (perm) {
+
+            return true;
+
+        }
+
+    }
+
+
+
+    return false;
+
+}
+"
+12429,FN,1,0,0.17907697,28,0,2.9,L13:2.9:for (ch = 0; ch < s->channels; ch++) | L1:1.5:static int encode_frame(FlacEncodeContext *s) | L3:0.8:{ | L25:0.8:return count >> 3; | L27:0.8:},"static int encode_frame(FlacEncodeContext *s)
+
+{
+
+    int ch, count;
+
+
+
+    count = count_frame_header(s);
+
+
+
+    for (ch = 0; ch < s->channels; ch++)
+
+        count += encode_residual_ch(s, ch);
+
+
+
+    count += (8 - (count & 7)) & 7; // byte alignment
+
+    count += 16;                    // CRC-16
+
+
+
+    return count >> 3;
+
+}
+"
+12596,FN,1,0,0.16964649,34,0,1.5,"L1:1.5:static int cirrus_bitblt_solidfill(CirrusVGAState *s, int blt_rop) | L15:1.5:rop_func = cirrus_fill[rop_to_index[blt_rop]][s->cirrus_blt_pixelwidth - 1]; | L17:1.5:rop_func(s, s->vga.vram_ptr + (s->cirrus_blt_dstaddr & s->cirrus_addr_mask), | L19:1.5:s->cirrus_blt_dstpitch, | L21:1.5:s->cirrus_blt_width, s->cirrus_blt_height);","static int cirrus_bitblt_solidfill(CirrusVGAState *s, int blt_rop)
+
+{
+
+    cirrus_fill_t rop_func;
+
+
+
+    if (blit_is_unsafe(s)) {
+
+        return 0;
+
+    }
+
+    rop_func = cirrus_fill[rop_to_index[blt_rop]][s->cirrus_blt_pixelwidth - 1];
+
+    rop_func(s, s->vga.vram_ptr + (s->cirrus_blt_dstaddr & s->cirrus_addr_mask),
+
+             s->cirrus_blt_dstpitch,
+
+             s->cirrus_blt_width, s->cirrus_blt_height);
+
+    cirrus_invalidate_region(s, s->cirrus_blt_dstaddr,
+
+			     s->cirrus_blt_dstpitch, s->cirrus_blt_width,
+
+			     s->cirrus_blt_height);
+
+    cirrus_bitblt_reset(s);
+
+    return 1;
+
+}
+"
+12828,FN,1,0,0.1716505,716,0,3.3,"L507:3.3:if (!pci_enabled || (nd->model && strcmp(nd->model, ""ne2k_isa"") == 0)) | L539:3.1:hd[i] = NULL; | L585:3.1:fd[i] = NULL; | L475:2.9:if (serial_hds[i]) { | L489:2.9:if (parallel_hds[i]) {","static void pc_init1(ram_addr_t ram_size, int vga_ram_size,
+
+                     const char *boot_device, DisplayState *ds,
+
+                     const char *kernel_filename, const char *kernel_cmdline,
+
+                     const char *initrd_filename,
+
+                     int pci_enabled, const char *cpu_model)
+
+{
+
+    char buf[1024];
+
+    int ret, linux_boot, i;
+
+    ram_addr_t ram_addr, vga_ram_addr, bios_offset, vga_bios_offset;
+
+    ram_addr_t below_4g_mem_size, above_4g_mem_size = 0;
+
+    int bios_size, isa_bios_size, vga_bios_size;
+
+    PCIBus *pci_bus;
+
+    int piix3_devfn = -1;
+
+    CPUState *env;
+
+    qemu_irq *cpu_irq;
+
+    qemu_irq *i8259;
+
+    int index;
+
+    BlockDriverState *hd[MAX_IDE_BUS * MAX_IDE_DEVS];
+
+    BlockDriverState *fd[MAX_FD];
+
+
+
+    if (ram_size >= 0xe0000000 ) {
+
+        above_4g_mem_size = ram_size - 0xe0000000;
+
+        below_4g_mem_size = 0xe0000000;
+
+    } else {
+
+        below_4g_mem_size = ram_size;
+
+    }
+
+
+
+    linux_boot = (kernel_filename != NULL);
+
+
+
+    /* init CPUs */
+
+    if (cpu_model == NULL) {
+
+#ifdef TARGET_X86_64
+
+        cpu_model = ""qemu64"";
+
+#else
+
+        cpu_model = ""qemu32"";
+
+#endif
+
+    }
+
+    
+
+    for(i = 0; i < smp_cpus"
+12946,FN,1,0,0.07237402,88,1,4.1,"L53:4.1:memmove(g2h(dest), g2h(src), l + 1); | L21:1.8:if ((l > 32) && | L27:1.8:if (dest == (src + 1)) { | L45:1.8:if (dest == (src + 1)) { | L65:1.8:if (dest != (src + 1)) {","void HELPER(mvc)(CPUS390XState *env, uint32_t l, uint64_t dest, uint64_t src)
+
+{
+
+    int i = 0;
+
+    int x = 0;
+
+    uint32_t l_64 = (l + 1) / 8;
+
+
+
+    HELPER_LOG(""%s l %d dest %"" PRIx64 "" src %"" PRIx64 ""\n"",
+
+               __func__, l, dest, src);
+
+
+
+#ifndef CONFIG_USER_ONLY
+
+    if ((l > 32) &&
+
+        (src & TARGET_PAGE_MASK) == ((src + l) & TARGET_PAGE_MASK) &&
+
+        (dest & TARGET_PAGE_MASK) == ((dest + l) & TARGET_PAGE_MASK)) {
+
+        if (dest == (src + 1)) {
+
+            mvc_fast_memset(env, l + 1, dest, cpu_ldub_data(env, src));
+
+            return;
+
+        } else if ((src & TARGET_PAGE_MASK) != (dest & TARGET_PAGE_MASK)) {
+
+            mvc_fast_memmove(env, l + 1, dest, src);
+
+            return;
+
+        }
+
+    }
+
+#else
+
+    if (dest == (src + 1)) {
+
+        memset(g2h(dest), cpu_ldub_data(env, src), l + 1);
+
+        return;
+
+    } else {
+
+        memmove(g2h(dest), g2h(src), l + 1);
+
+        return;
+
+    }
+
+#endif
+
+
+
+    /* handle the parts that fit into 8-byte loads/stores */
+
+    if (dest != (src + 1)) {
+
+        for (i = 0; i < l_64; i++) {
+
+            cpu_stq_data(env, dest + x, cpu_ldq_data(env, src + x));
+
+            x += 8;
+
+        }
+
+    }
+
+
+
+    /* "
+13035,FN,1,0,0.08977329,32,0,2.9,L11:2.9:if (s->connected) { | L19:2.3:/* Next poll ... */ | L27:1.9:s->timer_tag = 0; | L5:1.5:struct CharDriverState *chr = opaque; | L7:1.5:PtyCharDriver *s = chr->opaque;,"static gboolean pty_chr_timer(gpointer opaque)
+
+{
+
+    struct CharDriverState *chr = opaque;
+
+    PtyCharDriver *s = chr->opaque;
+
+
+
+    if (s->connected) {
+
+        goto out;
+
+    }
+
+
+
+    /* Next poll ... */
+
+    pty_chr_update_read_handler(chr);
+
+
+
+out:
+
+    s->timer_tag = 0;
+
+    return FALSE;
+
+}
+"
+13205,FN,1,0,0.188576,30,0,2.3,"L15:2.3:int b= src[i*3+0]; | L17:2.3:int g= src[i*3+1]; | L19:2.3:int r= src[i*3+2]; | L23:2.3:dst[i]= ((RY*r + GY*g + BY*b + (33<<(RGB2YUV_SHIFT-1)))>>RGB2YUV_SHIFT); | L1:1.9:static inline void RENAME(bgr24ToY)(uint8_t *dst, const uint8_t *src, int width, uint32_t *unused)","static inline void RENAME(bgr24ToY)(uint8_t *dst, const uint8_t *src, int width, uint32_t *unused)
+
+{
+
+#if COMPILE_TEMPLATE_MMX
+
+    RENAME(bgr24ToY_mmx)(dst, src, width, PIX_FMT_BGR24);
+
+#else
+
+    int i;
+
+    for (i=0; i<width; i++) {
+
+        int b= src[i*3+0];
+
+        int g= src[i*3+1];
+
+        int r= src[i*3+2];
+
+
+
+        dst[i]= ((RY*r + GY*g + BY*b + (33<<(RGB2YUV_SHIFT-1)))>>RGB2YUV_SHIFT);
+
+    }
+
+#endif /* COMPILE_TEMPLATE_MMX */
+
+}
+"
+13347,FN,1,0,0.19159223,60,0,1.5,"L1:1.5:static void decode_abs_store(CPUTriCoreState *env, DisasContext *ctx) | L15:1.5:r1 = MASK_OP_ABS_S1D(ctx->opcode); | L17:1.5:address = MASK_OP_ABS_OFF18(ctx->opcode); | L19:1.5:op2 = MASK_OP_ABS_OP2(ctx->opcode); | L31:1.5:tcg_gen_qemu_st_tl(cpu_gpr_a[r1], temp, ctx->mem_idx, MO_LESL);","static void decode_abs_store(CPUTriCoreState *env, DisasContext *ctx)
+
+{
+
+    int32_t op2;
+
+    int32_t r1;
+
+    uint32_t address;
+
+    TCGv temp;
+
+
+
+    r1 = MASK_OP_ABS_S1D(ctx->opcode);
+
+    address = MASK_OP_ABS_OFF18(ctx->opcode);
+
+    op2 = MASK_OP_ABS_OP2(ctx->opcode);
+
+
+
+    temp = tcg_const_i32(EA_ABS_FORMAT(address));
+
+
+
+    switch (op2) {
+
+    case OPC2_32_ABS_ST_A:
+
+        tcg_gen_qemu_st_tl(cpu_gpr_a[r1], temp, ctx->mem_idx, MO_LESL);
+
+        break;
+
+    case OPC2_32_ABS_ST_D:
+
+        gen_st_2regs_64(cpu_gpr_d[r1+1], cpu_gpr_d[r1], temp, ctx);
+
+        break;
+
+    case OPC2_32_ABS_ST_DA:
+
+        gen_st_2regs_64(cpu_gpr_a[r1+1], cpu_gpr_a[r1], temp, ctx);
+
+        break;
+
+    case OPC2_32_ABS_ST_W:
+
+        tcg_gen_qemu_st_tl(cpu_gpr_d[r1], temp, ctx->mem_idx, MO_LESL);
+
+        break;
+
+
+
+    }
+
+    tcg_temp_free(temp);
+
+}
+"
+13734,FN,1,0,0.08740792,26,0,3.1,"L15:3.1:v = validate_test_init(data, ""{ 'string0': 'string0', 'dict1': { 'string1': 'string1', 'dict2': { 'userdef1': { 'integer | L7:2.3:UserDefTwo *udp = NULL; | L9:2.3:Error *err = NULL; | L1:1.5:static void test_validate_fail_struct_nested(TestInputVisitorData *data, | L3:1.5:const void *unused)","static void test_validate_fail_struct_nested(TestInputVisitorData *data,
+
+                                              const void *unused)
+
+{
+
+    UserDefTwo *udp = NULL;
+
+    Error *err = NULL;
+
+    Visitor *v;
+
+
+
+    v = validate_test_init(data, ""{ 'string0': 'string0', 'dict1': { 'string1': 'string1', 'dict2': { 'userdef1': { 'integer': 42, 'string': 'string', 'extra': [42, 23, {'foo':'bar'}] }, 'string2': 'string2'}}}"");
+
+
+
+    visit_type_UserDefTwo(v, NULL, &udp, &err);
+
+    error_free_or_abort(&err);
+
+    qapi_free_UserDefTwo(udp);
+
+}
+"
+13897,FN,1,0,0.07466877,22,0,2.3,"L5:2.3:/* | L7:2.3:* Here we use the number returned by pci_spapr_map_irq to find a | L11:2.3:*/ | L1:1.5:static void pci_spapr_set_irq(void *opaque, int irq_num, int level) | L9:1.5:* corresponding qemu_irq.","static void pci_spapr_set_irq(void *opaque, int irq_num, int level)
+
+{
+
+    /*
+
+     * Here we use the number returned by pci_spapr_map_irq to find a
+
+     * corresponding qemu_irq.
+
+     */
+
+    sPAPRPHBState *phb = opaque;
+
+
+
+    trace_spapr_pci_lsi_set(phb->busname, irq_num, phb->lsi_table[irq_num].irq);
+
+    qemu_set_irq(spapr_phb_lsi_qirq(phb, irq_num), level);
+
+}
+"
+14248,FN,1,0,0.1894836,253,0,2.3,"L11:2.3:/***********************************/ | L19:1.9:void ff_h264_weight_ ## W ## x ## H ## _ ## OPT(uint8_t *dst, \ | L27:1.9:void ff_h264_biweight_ ## W ## x ## H ## _ ## OPT(uint8_t *dst, \ | L13:1.5:/* weighted prediction */ | L29:1.5:uint8_t *src, int stride, int log2_denom, int weightd, \","LF_FUNC (h,  luma,         sse2)
+
+LF_IFUNC(h,  luma_intra,   sse2)
+
+LF_FUNC (v,  luma,         sse2)
+
+LF_IFUNC(v,  luma_intra,   sse2)
+
+
+
+/***********************************/
+
+/* weighted prediction */
+
+
+
+#define H264_WEIGHT(W, H, OPT) \
+
+void ff_h264_weight_ ## W ## x ## H ## _ ## OPT(uint8_t *dst, \
+
+    int stride, int log2_denom, int weight, int offset);
+
+
+
+#define H264_BIWEIGHT(W, H, OPT) \
+
+void ff_h264_biweight_ ## W ## x ## H ## _ ## OPT(uint8_t *dst, \
+
+    uint8_t *src, int stride, int log2_denom, int weightd, \
+
+    int weights, int offset);
+
+
+
+#define H264_BIWEIGHT_MMX(W,H) \
+
+H264_WEIGHT  (W, H, mmx2) \
+
+H264_BIWEIGHT(W, H, mmx2)
+
+
+
+#define H264_BIWEIGHT_MMX_SSE(W,H) \
+
+H264_BIWEIGHT_MMX(W, H) \
+
+H264_WEIGHT      (W, H, sse2) \
+
+H264_BIWEIGHT    (W, H, sse2) \
+
+H264_BIWEIGHT    (W, H, ssse3)
+
+
+
+H264_BIWEIGHT_MMX_SSE(16, 16)
+
+H264_BIWEIGHT_MMX_SSE(16,  8)
+
+H264_BIWEIGHT_MMX_SSE( 8, 16)
+
+H264_BIWEIGHT_MMX_SSE( 8,  8)
+
+H264_BIWEIGHT_MMX_SSE( 8,  4)
+
+H264_BIWEIGHT_MMX    ( 4,  8)
+
+H264_BIWEIGHT_MMX    ( 4,  4)
+
+H264_BIWEIGHT_MMX    ( 4,  2)
+
+
+
+void ff_h264dsp_init_x86(H264DSPContext *c)
+
+{
+
+    int mm_flags = av_get_cpu_flags();
+
+
+
+    if (mm_flags & AV_CPU_FLAG_MMX2) {
+
+"
+14366,FN,1,0,0.19588234,14,0,3.7,"L7:3.7:if (!last && class->option[0].name) return class->option; | L9:3.7:if (last && last[1].name)           return ++last; | L5:1.9:AVClass *class = *(AVClass**)obj; | L1:1.5:const AVOption *av_opt_next(void *obj, const AVOption *last) | L3:0.8:{","const AVOption *av_opt_next(void *obj, const AVOption *last)
+
+{
+
+    AVClass *class = *(AVClass**)obj;
+
+    if (!last && class->option[0].name) return class->option;
+
+    if (last && last[1].name)           return ++last;
+
+    return NULL;
+
+}
+"
+14679,FN,1,0,0.111368,24,0,1.9,"L21:1.9:s->config_reg = val; | L1:1.5:static void pci_unin_main_config_writel (void *opaque, target_phys_addr_t addr, | L7:1.5:UNINState *s = opaque; | L5:0.8:{ | L23:0.8:}","static void pci_unin_main_config_writel (void *opaque, target_phys_addr_t addr,
+
+                                         uint32_t val)
+
+{
+
+    UNINState *s = opaque;
+
+
+
+    UNIN_DPRINTF(""config_writel addr "" TARGET_FMT_plx "" val %x\n"", addr, val);
+
+#ifdef TARGET_WORDS_BIGENDIAN
+
+    val = bswap32(val);
+
+#endif
+
+
+
+    s->config_reg = val;
+
+}
+"
+14750,FN,1,0,0.10411242,22,0,2.5,"L9:2.5:/* Cancel timer and start doing I/O that were meant to happen as if it | L13:1.9:* correctly. */ | L1:1.5:static void bdrv_qed_drain(BlockDriverState *bs) | L5:1.5:BDRVQEDState *s = bs->opaque; | L11:1.5:* fired, that way we get bdrv_drain() taking care of the ongoing requests","static void bdrv_qed_drain(BlockDriverState *bs)
+
+{
+
+    BDRVQEDState *s = bs->opaque;
+
+
+
+    /* Cancel timer and start doing I/O that were meant to happen as if it
+
+     * fired, that way we get bdrv_drain() taking care of the ongoing requests
+
+     * correctly. */
+
+    qed_cancel_need_check_timer(s);
+
+    qed_plug_allocating_write_reqs(s);
+
+    bdrv_aio_flush(s->bs, qed_clear_need_check, s);
+
+}
+"
+15115,FN,1,0,0.11138611,162,0,3.3,"L29:3.3:* if blocking == true, it is only true after poll() returns, | L59:2.9:if (!node->deleted && node->pfd.events | L21:2.5:/* aio_notify can avoid the expensive event_notifier_set if | L125:2.5:/* if we have any readable fds, dispatch event */ | L145:2.5:/* Run dispatch even if there were no readable fds to run timers */","bool aio_poll(AioContext *ctx, bool blocking)
+
+{
+
+    AioHandler *node;
+
+    int i, ret;
+
+    bool progress;
+
+    int64_t timeout;
+
+
+
+    aio_context_acquire(ctx);
+
+    progress = false;
+
+
+
+    /* aio_notify can avoid the expensive event_notifier_set if
+
+     * everything (file descriptors, bottom halves, timers) will
+
+     * be re-evaluated before the next blocking poll().  This is
+
+     * already true when aio_poll is called with blocking == false;
+
+     * if blocking == true, it is only true after poll() returns,
+
+     * so disable the optimization now.
+
+     */
+
+    if (blocking) {
+
+        atomic_add(&ctx->notify_me, 2);
+
+    }
+
+
+
+    ctx->walking_handlers++;
+
+
+
+    assert(npfd == 0);
+
+
+
+    /* fill pollfds */
+
+
+
+    if (!aio_epoll_enabled(ctx)) {
+
+        QLIST_FOREACH(node, &ctx->aio_handlers, node) {
+
+            if (!node->deleted && node->pfd.events
+
+                && aio_node_check(ctx, node->is_external)) {
+
+                add_pollfd(node);
+
+            }
+
+        }
+
+    }
+
+
+
+    timeout = blocking ? aio_compute_timeout(ctx) : 0;
+
+
+
+    /* wait until next event */
+
+    if (timeout) {
+
+        aio_context_release(ctx);
+
+    }
+
+    if (aio_epoll_check_poll(ctx, pollfds,"
+15136,FN,1,0,0.12921032,186,0,3.3,L131:3.3:if (!(env->cr[0] & CR0_PG_MASK)) { | L17:2.9:if (env->cr[4] & CR4_PAE_MASK) { | L149:2.9:if ((pde & PG_PSE_MASK) && (env->cr[4] & CR4_PSE_MASK)) { | L27:2.5:if (env->hflags & HF_LMA_MASK) { | L45:2.3:pml4e_addr = ((env->cr[3] & ~0xfff) + (((addr >> 39) & 0x1ff) << 3)) &,"target_phys_addr_t cpu_get_phys_page_debug(CPUState *env, target_ulong addr)
+
+{
+
+    target_ulong pde_addr, pte_addr;
+
+    uint64_t pte;
+
+    target_phys_addr_t paddr;
+
+    uint32_t page_offset;
+
+    int page_size;
+
+
+
+    if (env->cr[4] & CR4_PAE_MASK) {
+
+        target_ulong pdpe_addr;
+
+        uint64_t pde, pdpe;
+
+
+
+#ifdef TARGET_X86_64
+
+        if (env->hflags & HF_LMA_MASK) {
+
+            uint64_t pml4e_addr, pml4e;
+
+            int32_t sext;
+
+
+
+            /* test virtual address sign extension */
+
+            sext = (int64_t)addr >> 47;
+
+            if (sext != 0 && sext != -1)
+
+                return -1;
+
+
+
+            pml4e_addr = ((env->cr[3] & ~0xfff) + (((addr >> 39) & 0x1ff) << 3)) &
+
+                env->a20_mask;
+
+            pml4e = ldq_phys(pml4e_addr);
+
+            if (!(pml4e & PG_PRESENT_MASK))
+
+                return -1;
+
+
+
+            pdpe_addr = ((pml4e & ~0xfff) + (((addr >> 30) & 0x1ff) << 3)) &
+
+                env->a20_mask;
+
+            pdpe = ldq_phys(pdpe_addr);
+
+            if (!(pdpe & PG_PRESENT_MASK))
+
+                return -1;
+
+        } else
+
+#endif
+
+        {
+
+            pdpe_addr = ((env->cr[3] & ~0x1f) + ((addr >> 27) & 0x18)) &
+
+            "
+15239,FN,1,0,0.20071429,30,0,3.1,"L21:3.1:return g_strdup_printf(""%s/%d:%d:%d"", id, d->channel, d->id, d->lun); | L25:3.1:return g_strdup_printf(""%d:%d:%d"", d->channel, d->id, d->lun); | L13:2.9:if (hba && hba->parent_bus && hba->parent_bus->info->get_dev_path) { | L9:2.3:char *id = NULL; | L15:1.9:id = hba->parent_bus->info->get_dev_path(hba);","static char *scsibus_get_dev_path(DeviceState *dev)
+
+{
+
+    SCSIDevice *d = DO_UPCAST(SCSIDevice, qdev, dev);
+
+    DeviceState *hba = dev->parent_bus->parent;
+
+    char *id = NULL;
+
+
+
+    if (hba && hba->parent_bus && hba->parent_bus->info->get_dev_path) {
+
+        id = hba->parent_bus->info->get_dev_path(hba);
+
+    }
+
+    if (id) {
+
+        return g_strdup_printf(""%s/%d:%d:%d"", id, d->channel, d->id, d->lun);
+
+    } else {
+
+        return g_strdup_printf(""%d:%d:%d"", d->channel, d->id, d->lun);
+
+    }
+
+}
+"
+15373,FN,1,0,0.15778463,40,0,3.3,"L31:3.3:} else { /* TODO */ | L21:2.9:if (con != (dcl->con ? dcl->con : active_console)) { | L27:2.9:if (dcl->ops->dpy_gfx_copy) { | L29:1.9:dcl->ops->dpy_gfx_copy(dcl, src_x, src_y, dst_x, dst_y, w, h); | L33:1.9:dcl->ops->dpy_gfx_update(dcl, dst_x, dst_y, w, h);","void dpy_gfx_copy(QemuConsole *con, int src_x, int src_y,
+
+                  int dst_x, int dst_y, int w, int h)
+
+{
+
+    DisplayState *s = con->ds;
+
+    DisplayChangeListener *dcl;
+
+
+
+    if (!qemu_console_is_visible(con)) {
+
+        return;
+
+    }
+
+    QLIST_FOREACH(dcl, &s->listeners, next) {
+
+        if (con != (dcl->con ? dcl->con : active_console)) {
+
+            continue;
+
+        }
+
+        if (dcl->ops->dpy_gfx_copy) {
+
+            dcl->ops->dpy_gfx_copy(dcl, src_x, src_y, dst_x, dst_y, w, h);
+
+        } else { /* TODO */
+
+            dcl->ops->dpy_gfx_update(dcl, dst_x, dst_y, w, h);
+
+        }
+
+    }
+
+}
+"
+15517,FN,1,0,0.02573606,12,0,1.5,"L1:1.5:int s390_cpu_write_elf64_note(WriteCoreDumpFunction f, CPUState *cs, | L3:1.5:int cpuid, void *opaque) | L7:1.5:S390CPU *cpu = S390_CPU(cs); | L5:0.8:{ | L9:0.8:return s390x_write_all_elf64_notes(""CORE"", f, cpu, cpuid, opaque);","int s390_cpu_write_elf64_note(WriteCoreDumpFunction f, CPUState *cs,
+
+                              int cpuid, void *opaque)
+
+{
+
+    S390CPU *cpu = S390_CPU(cs);
+
+    return s390x_write_all_elf64_notes(""CORE"", f, cpu, cpuid, opaque);
+
+}
+"
+15582,FN,1,0,0.06421199,12,0,1.5,"L1:1.5:static void qmp_output_end_struct(Visitor *v, Error **errp) | L5:1.5:QmpOutputVisitor *qov = to_qov(v); | L7:1.5:QObject *value = qmp_output_pop(qov); | L3:0.8:{ | L11:0.8:}","static void qmp_output_end_struct(Visitor *v, Error **errp)
+
+{
+
+    QmpOutputVisitor *qov = to_qov(v);
+
+    QObject *value = qmp_output_pop(qov);
+
+    assert(qobject_type(value) == QTYPE_QDICT);
+
+}
+"
+15594,FN,1,0,0.08173938,22,0,1.8,"L13:1.8:if (sloc < n-1) { | L1:1.5:putsum(uint8_t *data, uint32_t n, uint32_t sloc, uint32_t css, uint32_t cse) | L9:1.4:if (cse && cse < n) | L3:0.8:{ | L19:0.8:}","putsum(uint8_t *data, uint32_t n, uint32_t sloc, uint32_t css, uint32_t cse)
+
+{
+
+    uint32_t sum;
+
+
+
+    if (cse && cse < n)
+
+        n = cse + 1;
+
+    if (sloc < n-1) {
+
+        sum = net_checksum_add(n-css, data+css);
+
+        stw_be_p(data + sloc, net_checksum_finish(sum));
+
+    }
+
+}
+"
+15690,FN,1,0,0.17223276,24,0,1.5,"L1:1.5:static inline abi_long target_to_host_timespec(struct timespec *host_ts, | L7:1.5:struct target_timespec *target_ts; | L15:1.5:host_ts->tv_sec = tswapal(target_ts->tv_sec); | L17:1.5:host_ts->tv_nsec = tswapal(target_ts->tv_nsec); | L11:1.0:if (!lock_user_struct(VERIFY_READ, target_ts, target_addr, 1))","static inline abi_long target_to_host_timespec(struct timespec *host_ts,
+
+                                               abi_ulong target_addr)
+
+{
+
+    struct target_timespec *target_ts;
+
+
+
+    if (!lock_user_struct(VERIFY_READ, target_ts, target_addr, 1))
+
+        return -TARGET_EFAULT;
+
+    host_ts->tv_sec = tswapal(target_ts->tv_sec);
+
+    host_ts->tv_nsec = tswapal(target_ts->tv_nsec);
+
+    unlock_user_struct(target_ts, target_addr, 0);
+
+    return 0;
+
+}
+"
+16352,FN,1,0,0.037362,380,0,1.9,L33:1.9:data_regl = *args++; | L37:1.9:data_regh = *args++; | L43:1.9:addr_regl = *args++; | L47:1.9:addr_regh = *args++; | L171:1.9:/* slow path */,"static void tcg_out_qemu_ld(TCGContext *s, const TCGArg *args,
+
+                            int opc)
+
+{
+
+    int addr_regl, addr_reg1, addr_meml;
+
+    int data_regl, data_regh, data_reg1, data_reg2;
+
+    int mem_index, s_bits;
+
+#if defined(CONFIG_SOFTMMU)
+
+    void *label1_ptr, *label2_ptr;
+
+    int sp_args;
+
+#endif
+
+#if TARGET_LONG_BITS == 64
+
+# if defined(CONFIG_SOFTMMU)
+
+    uint8_t *label3_ptr;
+
+# endif
+
+    int addr_regh, addr_reg2, addr_memh;
+
+#endif
+
+    data_regl = *args++;
+
+    if (opc == 3)
+
+        data_regh = *args++;
+
+    else
+
+        data_regh = 0;
+
+    addr_regl = *args++;
+
+#if TARGET_LONG_BITS == 64
+
+    addr_regh = *args++;
+
+#endif
+
+    mem_index = *args;
+
+    s_bits = opc & 3;
+
+
+
+    if (opc == 3) {
+
+#if defined(TCG_TARGET_WORDS_BIGENDIAN)
+
+        data_reg1 = data_regh;
+
+        data_reg2 = data_regl;
+
+#else
+
+        data_reg1 = data_regl;
+
+        data_reg2 = data_regh;
+
+#endif
+
+    } else {
+
+        data_reg1 = data_regl;
+
+        data_reg2 = 0;
+
+    }
+
+#if TARGET_LONG_BITS == 64
+
+# if defined(TCG_TARGET_WORDS_BIGENDIAN)
+
+    addr_reg1 = addr_regh;
+
+    addr_reg2 = addr_regl;
+
+    addr_memh = 0;
+
+    addr_meml = 4;
+
+# else
+
+    addr_reg1 = addr_regl;
+
+    addr"
+16666,FN,1,0,0.13601916,68,0,3.3,L25:3.3:for (i = 0; i < req->count; i++) { | L47:3.3:for (i = 0; i < req->count; i++) { | L13:2.9:if (req->dir == IOREQ_READ) { | L15:2.9:if (!req->data_is_ptr) { | L39:2.9:} else if (req->dir == IOREQ_WRITE) {,"static void cpu_ioreq_pio(ioreq_t *req)
+
+{
+
+    int i, sign;
+
+
+
+    sign = req->df ? -1 : 1;
+
+
+
+    if (req->dir == IOREQ_READ) {
+
+        if (!req->data_is_ptr) {
+
+            req->data = do_inp(req->addr, req->size);
+
+        } else {
+
+            uint32_t tmp;
+
+
+
+            for (i = 0; i < req->count; i++) {
+
+                tmp = do_inp(req->addr, req->size);
+
+                cpu_physical_memory_write(
+
+                        req->data + (sign * i * (int64_t)req->size),
+
+                        (uint8_t *) &tmp, req->size);
+
+            }
+
+        }
+
+    } else if (req->dir == IOREQ_WRITE) {
+
+        if (!req->data_is_ptr) {
+
+            do_outp(req->addr, req->size, req->data);
+
+        } else {
+
+            for (i = 0; i < req->count; i++) {
+
+                uint32_t tmp = 0;
+
+
+
+                cpu_physical_memory_read(
+
+                        req->data + (sign * i * (int64_t)req->size),
+
+                        (uint8_t*) &tmp, req->size);
+
+                do_outp(req->addr, req->size, tmp);
+
+            }
+
+        }
+
+    }
+
+}
+"
+16700,FN,1,0,0.13335878,18,0,1.5,"L1:1.5:static void mov_metadata_creation_time(AVMetadata **metadata, time_t time) | L5:1.5:char buffer[32]; | L9:1.5:time -= 2082844800;  /* seconds between 1904-01-01 and Epoch */ | L7:1.4:if (time) { | L3:0.8:{","static void mov_metadata_creation_time(AVMetadata **metadata, time_t time)
+
+{
+
+    char buffer[32];
+
+    if (time) {
+
+        time -= 2082844800;  /* seconds between 1904-01-01 and Epoch */
+
+        strftime(buffer, sizeof(buffer), ""%Y-%m-%d %H:%M:%S"", gmtime(&time));
+
+        av_metadata_set2(metadata, ""creation_time"", buffer, 0);
+
+    }
+
+}
+"
+16708,FN,1,0,0.12592277,130,0,2.7,L49:2.7:return timer->cmp >> 32; | L53:2.7:return timer->fsb >> 32; | L115:2.7:return s->isr; | L37:2.3:return timer->config; | L41:2.3:return timer->config >> 32;,"static uint32_t hpet_ram_readl(void *opaque, target_phys_addr_t addr)
+
+{
+
+    HPETState *s = (HPETState *)opaque;
+
+    uint64_t cur_tick, index;
+
+
+
+    DPRINTF(""qemu: Enter hpet_ram_readl at %"" PRIx64 ""\n"", addr);
+
+    index = addr;
+
+    /*address range of all TN regs*/
+
+    if (index >= 0x100 && index <= 0x3ff) {
+
+        uint8_t timer_id = (addr - 0x100) / 0x20;
+
+        if (timer_id > HPET_NUM_TIMERS - 1) {
+
+            printf(""qemu: timer id out of range\n"");
+
+            return 0;
+
+        }
+
+        HPETTimer *timer = &s->timer[timer_id];
+
+
+
+        switch ((addr - 0x100) % 0x20) {
+
+            case HPET_TN_CFG:
+
+                return timer->config;
+
+            case HPET_TN_CFG + 4: // Interrupt capabilities
+
+                return timer->config >> 32;
+
+            case HPET_TN_CMP: // comparator register
+
+                return timer->cmp;
+
+            case HPET_TN_CMP + 4:
+
+                return timer->cmp >> 32;
+
+            case HPET_TN_ROUTE:
+
+                return timer->fsb >> 32;
+
+            default:
+
+                DPRINTF(""qemu: invalid hpet_ram_readl\n"");
+
+                break;
+
+        }
+
+    } else {
+
+        switch (index) {
+
+            case HPET_ID:
+
+  "
+16771,FN,1,0,0.06125536,108,0,3.7,"L27:3.7:while ((cpuid = try_get_cpuid(env->kvm_state, max)) == NULL) { | L35:3.3:for (i = 0; i < cpuid->nent; ++i) { | L37:2.9:if (cpuid->entries[i].function == function && | L17:2.5:if (!kvm_check_extension(env->kvm_state, KVM_CAP_EXT_CPUID)) { | L29:2.3:max *= 2;","uint32_t kvm_arch_get_supported_cpuid(CPUState *env, uint32_t function,
+
+                                      uint32_t index, int reg)
+
+{
+
+    struct kvm_cpuid2 *cpuid;
+
+    int i, max;
+
+    uint32_t ret = 0;
+
+    uint32_t cpuid_1_edx;
+
+
+
+    if (!kvm_check_extension(env->kvm_state, KVM_CAP_EXT_CPUID)) {
+
+        return -1U;
+
+    }
+
+
+
+    max = 1;
+
+    while ((cpuid = try_get_cpuid(env->kvm_state, max)) == NULL) {
+
+        max *= 2;
+
+    }
+
+
+
+    for (i = 0; i < cpuid->nent; ++i) {
+
+        if (cpuid->entries[i].function == function &&
+
+            cpuid->entries[i].index == index) {
+
+            switch (reg) {
+
+            case R_EAX:
+
+                ret = cpuid->entries[i].eax;
+
+                break;
+
+            case R_EBX:
+
+                ret = cpuid->entries[i].ebx;
+
+                break;
+
+            case R_ECX:
+
+                ret = cpuid->entries[i].ecx;
+
+                break;
+
+            case R_EDX:
+
+                ret = cpuid->entries[i].edx;
+
+                switch (function) {
+
+                case 1:
+
+                    /* KVM before 2.6.30 misreports the following features */
+
+                    ret |= CPUID_MTRR | CPUID_PAT | CPUID_MCE | CPUID_MCA;
+
+      "
+1726,FN,1,0,0.19261529,36,0,2.9,"L5:2.9:switch (vs->update) { | L19:2.9:if (!vs->output.offset || vs->audio_cap) { | L13:2.5:/* Only allow incremental updates if the output buffer | L15:2.5:* is empty, or if audio capture is enabled. | L17:2.3:*/","static bool vnc_should_update(VncState *vs)
+
+{
+
+    switch (vs->update) {
+
+    case VNC_STATE_UPDATE_NONE:
+
+        break;
+
+    case VNC_STATE_UPDATE_INCREMENTAL:
+
+        /* Only allow incremental updates if the output buffer
+
+         * is empty, or if audio capture is enabled.
+
+         */
+
+        if (!vs->output.offset || vs->audio_cap) {
+
+            return true;
+
+        }
+
+        break;
+
+    case VNC_STATE_UPDATE_FORCE:
+
+        return true;
+
+    }
+
+    return false;
+
+}
+"
+17362,FN,1,0,0.03249751,46,0,2.5,"L11:2.5:if (x86_iommu->intr_supported && kvm_irqchip_in_kernel() && | L23:2.5:if (s->intr_eim == ON_OFF_AUTO_ON && !x86_iommu->intr_supported) { | L33:2.5:if (s->intr_eim == ON_OFF_AUTO_AUTO) { | L1:1.5:static bool vtd_decide_config(IntelIOMMUState *s, Error **errp) | L5:1.5:X86IOMMUState *x86_iommu = X86_IOMMU_DEVICE(s);","static bool vtd_decide_config(IntelIOMMUState *s, Error **errp)
+
+{
+
+    X86IOMMUState *x86_iommu = X86_IOMMU_DEVICE(s);
+
+
+
+    /* Currently Intel IOMMU IR only support ""kernel-irqchip={off|split}"" */
+
+    if (x86_iommu->intr_supported && kvm_irqchip_in_kernel() &&
+
+        !kvm_irqchip_is_split()) {
+
+        error_setg(errp, ""Intel Interrupt Remapping cannot work with ""
+
+                         ""kernel-irqchip=on, please use 'split|off'."");
+
+        return false;
+
+    }
+
+    if (s->intr_eim == ON_OFF_AUTO_ON && !x86_iommu->intr_supported) {
+
+        error_setg(errp, ""eim=on cannot be selected without intremap=on"");
+
+        return false;
+
+    }
+
+
+
+    if (s->intr_eim == ON_OFF_AUTO_AUTO) {
+
+        s->intr_eim = x86_iommu->intr_supported ?
+
+                                              ON_OFF_AUTO_ON : ON_OFF_AUTO_OFF;
+
+    }
+
+
+
+    return true;
+
+}
+"
+17482,FN,1,0,0.01897804,38,0,2.3,L17:2.3:/* | L21:2.3:* will be able to return 1. | L23:2.3:*/ | L31:1.9:ret |= node->io_flush(node->opaque); | L5:1.5:AioHandler *node;,"void qemu_aio_flush(void)
+
+{
+
+    AioHandler *node;
+
+    int ret;
+
+
+
+    do {
+
+        ret = 0;
+
+
+
+	/*
+
+	 * If there are pending emulated aio start them now so flush
+
+	 * will be able to return 1.
+
+	 */
+
+        qemu_aio_wait();
+
+
+
+        LIST_FOREACH(node, &aio_handlers, node) {
+
+            ret |= node->io_flush(node->opaque);
+
+        }
+
+    } while (ret > 0);
+
+}
+"
+17805,FN,1,0,0.09459402,151,0,2.9,L21:2.9:if (bank_no < s->nbanks) { | L87:2.9:case 0x80:	/* INTC_ITR */ | L93:2.9:case 0x84:	/* INTC_MIR */ | L131:2.9:case 0x100 ... 0x300:	/* INTC_ILR */ | L135:2.9:if (bank_no > s->nbanks),"static uint64_t omap2_inth_read(void *opaque, target_phys_addr_t addr,
+
+                                unsigned size)
+
+{
+
+    struct omap_intr_handler_s *s = (struct omap_intr_handler_s *) opaque;
+
+    int offset = addr;
+
+    int bank_no, line_no;
+
+    struct omap_intr_handler_bank_s *bank = NULL;
+
+
+
+    if ((offset & 0xf80) == 0x80) {
+
+        bank_no = (offset & 0x60) >> 5;
+
+        if (bank_no < s->nbanks) {
+
+            offset &= ~0x60;
+
+            bank = &s->bank[bank_no];
+
+
+
+
+        }
+
+    }
+
+
+
+    switch (offset) {
+
+    case 0x00:	/* INTC_REVISION */
+
+        return s->revision;
+
+
+
+    case 0x10:	/* INTC_SYSCONFIG */
+
+        return (s->autoidle >> 2) & 1;
+
+
+
+    case 0x14:	/* INTC_SYSSTATUS */
+
+        return 1;						/* RESETDONE */
+
+
+
+    case 0x40:	/* INTC_SIR_IRQ */
+
+        return s->sir_intr[0];
+
+
+
+    case 0x44:	/* INTC_SIR_FIQ */
+
+        return s->sir_intr[1];
+
+
+
+    case 0x48:	/* INTC_CONTROL */
+
+        return (!s->mask) << 2;					/* GLOBALMASK */
+
+
+
+    case 0x4c:	/* INTC_PROTECTION */
+
+
+
+
+    case 0x50:	/* INTC_IDLE */
+
+        return s->autoidle & 3;
+
+
+
+    /* Per-bank registers */
+
+    case 0x80:	/* INTC_ITR */
+
+        return bank->inputs;
+
+
+
+    case 0x84"
+17893,FN,1,0,0.20252202,6,0,2.3,"L3:2.3:return h->pps.chroma_qp_table[qscale & 0xff]; | L1:1.5:static inline int get_chroma_qp(H264Context *h, int qscale){ | L5:0.8:}","static inline int get_chroma_qp(H264Context *h, int qscale){
+
+    return h->pps.chroma_qp_table[qscale & 0xff];
+
+}
+"
+1822,FN,1,0,0.10406687,142,0,2.3,"L15:2.3:dc->desc = ""POWER9""; | L13:1.9:dc->fw_name = ""PowerPC,POWER9""; | L73:1.9:pcc->msr_mask = (1ull << MSR_SF) | | L1:1.5:POWERPC_FAMILY(POWER9)(ObjectClass *oc, void *data) | L5:1.5:DeviceClass *dc = DEVICE_CLASS(oc);","POWERPC_FAMILY(POWER9)(ObjectClass *oc, void *data)
+
+{
+
+    DeviceClass *dc = DEVICE_CLASS(oc);
+
+    PowerPCCPUClass *pcc = POWERPC_CPU_CLASS(oc);
+
+    CPUClass *cc = CPU_CLASS(oc);
+
+
+
+    dc->fw_name = ""PowerPC,POWER9"";
+
+    dc->desc = ""POWER9"";
+
+    dc->props = powerpc_servercpu_properties;
+
+    pcc->pvr_match = ppc_pvr_match_power9;
+
+    pcc->pcr_mask = PCR_COMPAT_2_05 | PCR_COMPAT_2_06 | PCR_COMPAT_2_07;
+
+    pcc->pcr_supported = PCR_COMPAT_3_00 | PCR_COMPAT_2_07 | PCR_COMPAT_2_06 |
+
+                         PCR_COMPAT_2_05;
+
+    pcc->init_proc = init_proc_POWER9;
+
+    pcc->check_pow = check_pow_nocheck;
+
+    cc->has_work = cpu_has_work_POWER9;
+
+    pcc->insns_flags = PPC_INSNS_BASE | PPC_ISEL | PPC_STRING | PPC_MFTB |
+
+                       PPC_FLOAT | PPC_FLOAT_FSEL | PPC_FLOAT_FRES |
+
+                       PPC_FLOAT_FSQRT | PPC_FLOAT_FRSQRTE |
+
+                       PPC_FLOAT_FRSQRTES |
+
+                       PPC_FLOAT_STFIWX |
+
+                       PPC_FLOAT_EXT |
+
+                       PPC_CACHE | PPC_CACHE_ICBI | PPC_CACHE_DCBZ |
+
+                       PPC_MEM_SYNC | PPC_MEM_EIEIO |
+
+                       PPC_MEM_TLBIE | PPC_MEM_TLBSYNC |
+
+                       "
+18426,FN,1,0,0.2046199,44,0,2.3,"L27:2.3:rc->params[i] = k; | L37:1.9:rc->porder = porder; | L23:1.8:for (i = 0; i < part; i++) { | L1:1.5:static uint32_t calc_optimal_rice_params(RiceContext *rc, int porder, | L3:1.5:uint32_t *sums, int n, int pred_order)","static uint32_t calc_optimal_rice_params(RiceContext *rc, int porder,
+
+                                         uint32_t *sums, int n, int pred_order)
+
+{
+
+    int i;
+
+    int k, cnt, part;
+
+    uint32_t all_bits;
+
+
+
+    part     = (1 << porder);
+
+    all_bits = 4 * part;
+
+
+
+    cnt = (n >> porder) - pred_order;
+
+    for (i = 0; i < part; i++) {
+
+        k = find_optimal_param(sums[i], cnt);
+
+        rc->params[i] = k;
+
+        all_bits += rice_encode_count(sums[i], cnt, k);
+
+        cnt = n >> porder;
+
+    }
+
+
+
+    rc->porder = porder;
+
+
+
+    return all_bits;
+
+}
+"

@@ -180,3 +180,25 @@
   - 执行 `bash ./run_qwen_full.sh`。
   - 三组 full run 完成后执行 `bash ./collect_results.sh`。
   - 将 `reports/tables/main_results.csv` 和错例输出提交到 Git。
+
+## 2026-06-08 主实验结果
+
+- 本次目标：完成 Qwen2.5-Coder-1.5B + QLoRA 三组主实验，并汇总结果。
+- 已完成：
+  - Vanilla Qwen full run。
+  - LOSVER-Light Tag full run。
+  - LOSVER-Light Tag+Prefix full run。
+  - 执行 `scripts/collect_results.sh`，生成主结果表和错例表。
+- 关键结果：
+  - Metrics-Baseline：F1=0.630544，ROC-AUC=0.560892，PR-AUC=0.536395。
+  - Vanilla Qwen：F1=0.647360，ROC-AUC=0.686953，PR-AUC=0.679643。
+  - LOSVER-Light Tag：F1=0.687276，ROC-AUC=0.760319，PR-AUC=0.757150。
+  - LOSVER-Light Tag+Prefix：F1=0.679064，ROC-AUC=0.756535，PR-AUC=0.750676。
+- 初步结论：
+  - RQ1：LOSVER-Light 的显式行级信号相较 vanilla 输入有提升，尤其是 ROC-AUC 和 PR-AUC。
+  - RQ2：只加 `<MOD>` 标签优于 Tag+Prefix，说明更长的风险行摘要不一定带来更好效果，可能引入噪声或压缩有效代码上下文。
+  - RQ3：Metrics-Baseline 的 F1 不低但 ROC-AUC 弱，且误报极多，说明浅层代码度量可以捕捉一部分模式，但分类区分能力有限。
+- 下一步：
+  - 基于 `reports/tables/error_cases.csv` 做人工错例归类。
+  - 写报告实验结果与分析部分。
+  - 如时间允许，补充 top-k 或第二 seed 小消融。

@@ -1,2 +1,5 @@
 run,model,text_field,seed,threshold,accuracy,precision,recall,f1,roc_auc,pr_auc,tn,fp,fn,tp
+run_losver_prefix_seed42,Qwen/Qwen2.5-Coder-1.5B,text_tag_prefix,42,0.205,0.608346,0.544493,0.901992,0.679064,0.756535,0.750676,530,947,123,1132
+run_losver_tag_seed42,Qwen/Qwen2.5-Coder-1.5B,text_tag,42,0.275,0.648243,0.580858,0.841434,0.687276,0.760319,0.75715,715,762,199,1056
 run_metrics_seed42,LogisticRegression,metrics,42,0.355,0.463397,0.461113,0.996813,0.630544,0.560892,0.536395,15,1462,4,1251
+run_vanilla_seed42,Qwen/Qwen2.5-Coder-1.5B,text_vanilla,42,0.44,0.572108,0.520874,0.85498,0.64736,0.686953,0.679643,490,987,182,1073

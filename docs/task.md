@@ -242,6 +242,7 @@ python src/train_metrics_baseline.py \
 - [x] 支持 `--max_train_samples`、`--max_eval_samples` 做 smoke test。
 - [x] 先跑小样本 smoke test，确认 loss 下降、无 OOM。
 - [ ] 再跑 full Vanilla-LLM。
+- [x] full Vanilla-LLM 已完成：测试集 F1=0.647360，ROC-AUC=0.686953。
 
 推荐 smoke test：
 
@@ -275,9 +276,9 @@ accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train
 
 - [x] 写 `configs/losver_light_tag.yaml`。
 - [x] 写 `configs/losver_light_tag_prefix.yaml`。
-- [ ] 训练 LOSVER-Light Tag，seed=42。
-- [ ] 训练 LOSVER-Light Tag+Prefix，seed=42。
-- [ ] 汇总 Vanilla、Tag、Tag+Prefix 与 Metrics-Baseline。
+- [x] 训练 LOSVER-Light Tag，seed=42。
+- [x] 训练 LOSVER-Light Tag+Prefix，seed=42。
+- [x] 汇总 Vanilla、Tag、Tag+Prefix 与 Metrics-Baseline。
 - [x] 新增 `run_qwen_full.sh` 和 `collect_results.sh`，用于正式三组实验和结果汇总。
 
 推荐命令：
@@ -297,8 +298,9 @@ accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train
 验收标准：
 
 - [ ] 三组 LLM 实验均完成测试集评估。
-- [ ] `reports/tables/main_results.csv` 已生成。
-- [ ] 能回答 RQ1 和 RQ2。
+- [x] 三组 LLM 实验均完成测试集评估。
+- [x] `reports/tables/main_results.csv` 已生成。
+- [x] 能回答 RQ1 和 RQ2。
 
 ### Phase 6：消融、稳定性与误差分析
 
