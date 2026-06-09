@@ -1,0 +1,9 @@
+manual_category,count,description
+error_or_resource_management_false_alarm,4,错误处理、NULL 检查、分配释放和清理路径被模型过度解释为漏洞上下文。
+long_function_or_truncation,4,长函数或关键逻辑位置靠后，短上下文和 top-k 行选择难以覆盖完整漏洞语义。
+control_flow_or_pointer_false_alarm,3,低层控制流、指针或地址计算是正常实现模式，却被模型误判为风险。
+io_or_parser_false_alarm,3,I/O 或解析器代码包含偏移、缓冲区和读写操作，但样本中已有显式边界或状态约束。
+semantic_or_context_dependent_vulnerability,3,漏洞依赖编解码、页表、虚拟化等领域状态，需跨行/跨状态语义理解。
+weak_or_misleading_line_signal,3,行级风险信号弱或被注释、宏、关键词误导，不能稳定指向真实漏洞。
+benign_wrapper_or_accessor,2,短小包装/访问器函数缺少漏洞语义，但 API 名称或参数形态触发误报。
+dangerous_api_missed_in_long_function,2,存在 strcpy/memcpy 等危险 API，但被长函数、领域代码或普通数据搬运语境稀释。

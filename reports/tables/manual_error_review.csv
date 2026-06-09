@@ -1,0 +1,2017 @@
+id,error_type,auto_category,manual_category,label,prediction,prob_vulnerable,num_lines,num_dangerous_api,max_risk_score,risk_line_summary,manual_note,code_excerpt
+10504,FN,long_function_or_truncation,long_function_or_truncation,1,0,0.20605405,614,0,3.3,"L11:3.3:pointer_or_array,branch_or_loop,symbol_dense:if (ctx->pc & 0x1) { | L201:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:switch (ctx->opcode & 0x1) { | L241:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:switch (ctx->opcode & 0x1) { | L291:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:if (ctx->opcode & 1) { | L503:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:switch (ctx->opcode & 0x1) {",FN：函数体超过 600 行，主要是指令解码 switch/if 链；高风险行集中在控制流和指针访问，缺少明确危险 API，关键漏洞语义容易被 512 token 截断和 top-k 行选择稀释。,"static int decode_micromips_opc (CPUMIPSState *env, DisasContext *ctx, int *is_branch)
+
+{
+
+    uint32_t op;
+
+
+
+    /* make sure instructions are on a halfword boundary */
+
+    if (ctx->pc & 0x1) {
+
+        env->CP0_BadVAddr = ctx->pc;
+
+        generate_exception(ctx, EXCP_AdEL);
+
+        ctx->bstate = BS_STOP;
+
+        return 2;
+
+    }
+
+
+
+    op = (ctx->opcode >> 10) & 0x3f;
+
+    /* Enforce properly-sized instructions in a delay slot */
+
+    if (ctx->hflags & MIPS_HFLAG_BMASK) {
+
+        int bits = ctx->hflags & MIPS_HFLAG_BMASK_EXT;
+
+
+
+        switch (op) {
+
+        case POOL32A:
+
+        case POOL32B:
+
+        case POOL32I:
+
+        case POOL32C:
+
+        case ADDI32:
+
+        case ADDIU32:
+
+        case ORI32:
+
+        case XORI32:
+
+        case SLTI32:
+
+        case SLTIU32:
+
+        case ANDI32:
+
+        case JALX32:
+
+        case LBU32:
+
+        case LHU32:
+
+        case POOL32F:
+
+        case JALS32:
+
+        case BEQ32:
+
+        case BNE32:
+
+        case J32:
+
+        case JAL32:
+
+        case SB32:
+
+        case SH32:
+
+        case POOL32S:
+
+        case ADDIUPC:
+
+        case SWC132:
+
+        case SDC132:
+
+        case SD32:
+
+        case SW32:
+
+        case LB32:
+
+        case LH32:
+
+        case DADDIU32:
+
+        case LWC132:
+
+        case LDC132:
+
+        case LD32:
+
+        case LW32:
+
+            if (bits & MIPS_HFLAG_BDS16) {
+
+                generate_exception(ctx, EXCP_RI);
+
+                /* Just stop translation; the user is confused.  */
+
+                ctx->bstate = BS_STOP;
+
+                return 2;
+
+            }
+
+            break;
+
+        case POOL16A:
+
+        case POOL16B:
+
+        case POOL16C:
+
+        case LWGP16:
+
+        case POOL16F:
+
+        case LBU16:
+
+        case LHU16:
+
+        case LWSP16:
+
+        case LW16:
+
+        case S"
+11742,FN,long_function_or_truncation,dangerous_api_missed_in_long_function,1,0,0.21850257,198,1,5.6,"L41:5.6:dangerous_api,pointer_or_array,moderately_symbol_dense,unchecked_sensitive_call:strcpy(dev->port, port); | L17:3.3:pointer_or_array,branch_or_loop,symbol_dense:if (dev->fd != -1) { | L69:3.3:pointer_or_array,branch_or_loop,symbol_dense:for (x = 0; x < dev->descr_len; x++) { | L147:3.3:pointer_or_array,branch_or_loop,symbol_dense:if (!prod_name || prod_name[0] == '\0') { | L173:3.3:pointer_or_array,branch_or_loop,io_or_process_api:/* USB devio uses 'write' flag to check for async completions */","FN：usb_host_open 中存在 strcpy(dev->port, port) 这类强危险 API，但函数还包含较长的设备打开、ioctl 和错误处理流程；模型没有把该危险调用提升为漏洞判定。","static int usb_host_open(USBHostDevice *dev, int bus_num,
+
+                         int addr, const char *port,
+
+                         const char *prod_name, int speed)
+
+{
+
+    int fd = -1, ret;
+
+
+
+    trace_usb_host_open_started(bus_num, addr);
+
+
+
+    if (dev->fd != -1) {
+
+        goto fail;
+
+    }
+
+
+
+    fd = usb_host_open_device(bus_num, addr);
+
+    if (fd < 0) {
+
+        goto fail;
+
+    }
+
+    DPRINTF(""husb: opened %s\n"", buf);
+
+
+
+    dev->bus_num = bus_num;
+
+    dev->addr = addr;
+
+    strcpy(dev->port, port);
+
+    dev->fd = fd;
+
+
+
+    /* read the device description */
+
+    dev->descr_len = read(fd, dev->descr, sizeof(dev->descr));
+
+    if (dev->descr_len <= 0) {
+
+        perror(""husb: reading device data failed"");
+
+        goto fail;
+
+    }
+
+
+
+#ifdef DEBUG
+
+    {
+
+        int x;
+
+        printf(""=== begin dumping device descriptor data ===\n"");
+
+        for (x = 0; x < dev->descr_len; x++) {
+
+            printf(""%02x "", dev->descr[x]);
+
+        }
+
+        printf(""\n=== end dumping device descriptor data ===\n"");
+
+    }
+
+#endif
+
+
+
+
+
+    /* start unconfigured -- we'll wait for the guest to set a configuration */
+
+    if (!usb_host_claim_interfaces(dev, 0)) {
+
+        goto fail;
+
+    }
+
+
+
+    usb_ep_init(&dev->dev);
+
+    usb_linux_update_endp_table(dev);
+
+
+
+    if (speed == -1) {
+
+        struct usbdevfs_connectinfo ci;
+
+
+
+        ret = ioctl(fd, USBDEVFS_CONNECTINFO, &ci);
+
+        if (ret < 0) {
+
+            perror(""usb_host_device_open: USBDEVFS_CONNECTINFO"");
+
+            goto fail;
+
+        }
+
+
+
+        if (ci.slow) {
+
+            speed = USB_SPEED_LOW;
+
+        } else {
+
+            speed = USB_SPEED_HIGH;
+
+        }
+
+    }
+
+    dev->dev.speed = speed;
+
+    dev->dev.speedmask = (1 << speed);
+
+    if (dev->dev.speed == USB_SPEED_HIGH && usb_linux_full_speed_co"
+12278,FN,long_function_or_truncation,dangerous_api_missed_in_long_function,1,0,0.03239021,318,8,6.4,"L47:6.4:dangerous_api,pointer_or_array,medium_long_line,symbol_dense,unchecked_sensitive_call:memcpy(H11[0][0], H11[0][ps->num_env_old], PS_MAX_NR_IIDICC*sizeof(H11[0][0][0])); | L49:6.4:dangerous_api,pointer_or_array,medium_long_line,symbol_dense,unchecked_sensitive_call:memcpy(H11[1][0], H11[1][ps->num_env_old], PS_MAX_NR_IIDICC*sizeof(H11[1][0][0])); | L51:6.4:dangerous_api,pointer_or_array,medium_long_line,symbol_dense,unchecked_sensitive_call:memcpy(H12[0][0], H12[0][ps->num_env_old], PS_MAX_NR_IIDICC*sizeof(H12[0][0][0])); | L53:6.4:dangerous_api,pointer_or_array,medium_long_line,symbol_dense,unchecked_sensitive_call:memcpy(H12[1][0], H12[1][ps->num_env_old], PS_MAX_NR_IIDICC*sizeof(H12[1][0][0])); | L55:6.4:dangerous_api,pointer_or_array,medium_long_line,symbol_dense,unchecked_sensitive_call:memcpy(H21[0][0], H21[0][ps->num_env_old], PS_MAX_NR_IIDICC*sizeof(H21[0][0][0]));",FN：DSP/音频处理函数较长，包含多处 memcpy 和数组偏移操作；这些调用在批量拷贝场景中较常见，模型可能将其理解为普通数据搬运，低估了边界相关风险。,"static void stereo_processing(PSContext *ps, INTFLOAT (*l)[32][2], INTFLOAT (*r)[32][2], int is34)
+
+{
+
+    int e, b, k;
+
+
+
+    INTFLOAT (*H11)[PS_MAX_NUM_ENV+1][PS_MAX_NR_IIDICC] = ps->H11;
+
+    INTFLOAT (*H12)[PS_MAX_NUM_ENV+1][PS_MAX_NR_IIDICC] = ps->H12;
+
+    INTFLOAT (*H21)[PS_MAX_NUM_ENV+1][PS_MAX_NR_IIDICC] = ps->H21;
+
+    INTFLOAT (*H22)[PS_MAX_NUM_ENV+1][PS_MAX_NR_IIDICC] = ps->H22;
+
+    int8_t *opd_hist = ps->opd_hist;
+
+    int8_t *ipd_hist = ps->ipd_hist;
+
+    int8_t iid_mapped_buf[PS_MAX_NUM_ENV][PS_MAX_NR_IIDICC];
+
+    int8_t icc_mapped_buf[PS_MAX_NUM_ENV][PS_MAX_NR_IIDICC];
+
+    int8_t ipd_mapped_buf[PS_MAX_NUM_ENV][PS_MAX_NR_IIDICC];
+
+    int8_t opd_mapped_buf[PS_MAX_NUM_ENV][PS_MAX_NR_IIDICC];
+
+    int8_t (*iid_mapped)[PS_MAX_NR_IIDICC] = iid_mapped_buf;
+
+    int8_t (*icc_mapped)[PS_MAX_NR_IIDICC] = icc_mapped_buf;
+
+    int8_t (*ipd_mapped)[PS_MAX_NR_IIDICC] = ipd_mapped_buf;
+
+    int8_t (*opd_mapped)[PS_MAX_NR_IIDICC] = opd_mapped_buf;
+
+    const int8_t *k_to_i = is34 ? k_to_i_34 : k_to_i_20;
+
+    TABLE_CONST INTFLOAT (*H_LUT)[8][4] = (PS_BASELINE || ps->icc_mode < 3) ? HA : HB;
+
+
+
+    //Remapping
+
+    if (ps->num_env_old) {
+
+        memcpy(H11[0][0], H11[0][ps->num_env_old], PS_MAX_NR_IIDICC*sizeof(H11[0][0][0]));
+
+        memcpy(H11[1][0], H11[1][ps->num_env_old], PS_MAX_NR_IIDICC*sizeof(H11[1][0][0]));
+
+        memcpy(H12[0][0], H12[0][ps->num_env_old], PS_MAX_NR_IIDICC*sizeof(H12[0][0][0]));
+
+        memcpy(H12[1][0], H12[1][ps->num_env_old], PS_MAX_NR_IIDICC*sizeof(H12[1][0][0]));
+
+        memcpy(H21[0][0], H21[0][ps->num_env_old], PS_MAX_NR_IIDICC*sizeof(H21[0][0][0]));
+
+        memcpy(H21[1][0], H21[1][ps->num_env_old], PS_MAX_NR_IIDICC*sizeof(H21[1][0][0]));
+
+        memcpy(H22[0][0], H22[0][ps->num_env_old], PS_MAX_NR_IIDICC*sizeof(H22[0][0][0])"
+12828,FN,long_function_or_truncation,long_function_or_truncation,1,0,0.04703039,716,0,3.3,"L507:3.3:pointer_or_array,branch_or_loop,symbol_dense:if (!pci_enabled || (nd->model && strcmp(nd->model, ""ne2k_isa"") == 0)) | L539:3.1:pointer_or_array,error_handling,symbol_dense:hd[i] = NULL; | L585:3.1:pointer_or_array,error_handling,symbol_dense:fd[i] = NULL; | L475:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:if (serial_hds[i]) { | L489:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:if (parallel_hds[i]) {",FN：pc_init1 是大型初始化函数，函数体超过 700 行，风险信号分散在设备、内存和总线初始化逻辑中；输入截断后模型很难覆盖完整上下文。,"static void pc_init1(ram_addr_t ram_size, int vga_ram_size,
+
+                     const char *boot_device, DisplayState *ds,
+
+                     const char *kernel_filename, const char *kernel_cmdline,
+
+                     const char *initrd_filename,
+
+                     int pci_enabled, const char *cpu_model)
+
+{
+
+    char buf[1024];
+
+    int ret, linux_boot, i;
+
+    ram_addr_t ram_addr, vga_ram_addr, bios_offset, vga_bios_offset;
+
+    ram_addr_t below_4g_mem_size, above_4g_mem_size = 0;
+
+    int bios_size, isa_bios_size, vga_bios_size;
+
+    PCIBus *pci_bus;
+
+    int piix3_devfn = -1;
+
+    CPUState *env;
+
+    qemu_irq *cpu_irq;
+
+    qemu_irq *i8259;
+
+    int index;
+
+    BlockDriverState *hd[MAX_IDE_BUS * MAX_IDE_DEVS];
+
+    BlockDriverState *fd[MAX_FD];
+
+
+
+    if (ram_size >= 0xe0000000 ) {
+
+        above_4g_mem_size = ram_size - 0xe0000000;
+
+        below_4g_mem_size = 0xe0000000;
+
+    } else {
+
+        below_4g_mem_size = ram_size;
+
+    }
+
+
+
+    linux_boot = (kernel_filename != NULL);
+
+
+
+    /* init CPUs */
+
+    if (cpu_model == NULL) {
+
+#ifdef TARGET_X86_64
+
+        cpu_model = ""qemu64"";
+
+#else
+
+        cpu_model = ""qemu32"";
+
+#endif
+
+    }
+
+    
+
+    for(i = 0; i < smp_cpus; i++) {
+
+        env = cpu_init(cpu_model);
+
+        if (!env) {
+
+            fprintf(stderr, ""Unable to find x86 CPU definition\n"");
+
+            exit(1);
+
+        }
+
+        if (i != 0)
+
+            env->halted = 1;
+
+        if (smp_cpus > 1) {
+
+            /* XXX: enable it in all cases */
+
+            env->cpuid_features |= CPUID_APIC;
+
+        }
+
+        qemu_register_reset(main_cpu_reset, env);
+
+        if (pci_enabled) {
+
+            apic_init(env);
+
+        }
+
+    }
+
+
+
+    vmport_init();
+
+
+
+    /* allocate RAM */
+
+    ram_addr = qemu_ram_alloc(0xa0000);
+
+    cpu_register_physical_memo"
+13268,FN,long_function_or_truncation,long_function_or_truncation,1,0,0.18557791,1460,0,3.3,"L85:3.3:pointer_or_array,branch_or_loop,symbol_dense:for(k=0;k<is->nb_streams;k++) { | L187:3.3:pointer_or_array,branch_or_loop,symbol_dense:for(i=0;i<os->nb_streams;i++) { | L209:3.3:pointer_or_array,branch_or_loop,medium_long_line,moderately_symbol_dense:if (ist_table[ost->source_index]->st->codec.codec_type != ost->st->codec.codec_type) { | L1375:3.3:pointer_or_array,branch_or_loop,io_or_process_api:/* write the trailer if needed and close file */ | L957:3.1:pointer_or_array,io_or_process_api,symbol_dense:// printf(""read #%d.%d size=%d\n"", ist->file_index, ist->index, pkt.size);",FN：av_encode 超过 1400 行，包含编码主流程、循环和大量条件分支；漏洞触发条件依赖长距离状态，静态行风险和短上下文不足以表达完整语义。,"static int av_encode(AVFormatContext **output_files,
+
+                     int nb_output_files,
+
+                     AVFormatContext **input_files,
+
+                     int nb_input_files,
+
+                     AVStreamMap *stream_maps, int nb_stream_maps)
+
+{
+
+    int ret, i, j, k, n, nb_istreams = 0, nb_ostreams = 0;
+
+    AVFormatContext *is, *os;
+
+    AVCodecContext *codec, *icodec;
+
+    AVOutputStream *ost, **ost_table = NULL;
+
+    AVInputStream *ist, **ist_table = NULL;
+
+    AVInputFile *file_table;
+
+    AVFormatContext *stream_no_data;
+
+    int key;
+
+
+
+    file_table= (AVInputFile*) av_mallocz(nb_input_files * sizeof(AVInputFile));
+
+    if (!file_table)
+
+        goto fail;
+
+
+
+    /* input stream init */
+
+    j = 0;
+
+    for(i=0;i<nb_input_files;i++) {
+
+        is = input_files[i];
+
+        file_table[i].ist_index = j;
+
+        file_table[i].nb_streams = is->nb_streams;
+
+        j += is->nb_streams;
+
+    }
+
+    nb_istreams = j;
+
+
+
+    ist_table = av_mallocz(nb_istreams * sizeof(AVInputStream *));
+
+    if (!ist_table)
+
+        goto fail;
+
+    
+
+    for(i=0;i<nb_istreams;i++) {
+
+        ist = av_mallocz(sizeof(AVInputStream));
+
+        if (!ist)
+
+            goto fail;
+
+        ist_table[i] = ist;
+
+    }
+
+    j = 0;
+
+    for(i=0;i<nb_input_files;i++) {
+
+        is = input_files[i];
+
+        for(k=0;k<is->nb_streams;k++) {
+
+            ist = ist_table[j++];
+
+            ist->st = is->streams[k];
+
+            ist->file_index = i;
+
+            ist->index = k;
+
+            ist->discard = 1; /* the stream is discarded by default
+
+                                 (changed later) */
+
+
+
+            if (ist->st->codec.rate_emu) {
+
+                ist->start = av_gettime();
+
+                ist->frame = 0;
+
+            }
+
+        }
+
+    }
+
+
+
+    /* output stream init */
+
+    "
+14248,FN,long_function_or_truncation,weak_or_misleading_line_signal,1,0,0.04492116,253,0,2.3,"L11:2.3:pointer_or_array,symbol_dense:/***********************************/ | L19:1.9:pointer_or_array,moderately_symbol_dense:void ff_h264_weight_ ## W ## x ## H ## _ ## OPT(uint8_t *dst, \ | L27:1.9:pointer_or_array,moderately_symbol_dense:void ff_h264_biweight_ ## W ## x ## H ## _ ## OPT(uint8_t *dst, \ | L13:1.5:pointer_or_array:/* weighted prediction */ | L29:1.5:pointer_or_array:uint8_t *src, int stride, int log2_denom, int weightd, \",FN：代码呈现宏展开/表驱动风格，风险行主要来自指针、数组和宏形态；没有明显危险 API，行级信号弱，真实漏洞更依赖 H264 权重表语义。,"LF_FUNC (h,  luma,         sse2)
+
+LF_IFUNC(h,  luma_intra,   sse2)
+
+LF_FUNC (v,  luma,         sse2)
+
+LF_IFUNC(v,  luma_intra,   sse2)
+
+
+
+/***********************************/
+
+/* weighted prediction */
+
+
+
+#define H264_WEIGHT(W, H, OPT) \
+
+void ff_h264_weight_ ## W ## x ## H ## _ ## OPT(uint8_t *dst, \
+
+    int stride, int log2_denom, int weight, int offset);
+
+
+
+#define H264_BIWEIGHT(W, H, OPT) \
+
+void ff_h264_biweight_ ## W ## x ## H ## _ ## OPT(uint8_t *dst, \
+
+    uint8_t *src, int stride, int log2_denom, int weightd, \
+
+    int weights, int offset);
+
+
+
+#define H264_BIWEIGHT_MMX(W,H) \
+
+H264_WEIGHT  (W, H, mmx2) \
+
+H264_BIWEIGHT(W, H, mmx2)
+
+
+
+#define H264_BIWEIGHT_MMX_SSE(W,H) \
+
+H264_BIWEIGHT_MMX(W, H) \
+
+H264_WEIGHT      (W, H, sse2) \
+
+H264_BIWEIGHT    (W, H, sse2) \
+
+H264_BIWEIGHT    (W, H, ssse3)
+
+
+
+H264_BIWEIGHT_MMX_SSE(16, 16)
+
+H264_BIWEIGHT_MMX_SSE(16,  8)
+
+H264_BIWEIGHT_MMX_SSE( 8, 16)
+
+H264_BIWEIGHT_MMX_SSE( 8,  8)
+
+H264_BIWEIGHT_MMX_SSE( 8,  4)
+
+H264_BIWEIGHT_MMX    ( 4,  8)
+
+H264_BIWEIGHT_MMX    ( 4,  4)
+
+H264_BIWEIGHT_MMX    ( 4,  2)
+
+
+
+void ff_h264dsp_init_x86(H264DSPContext *c)
+
+{
+
+    int mm_flags = av_get_cpu_flags();
+
+
+
+    if (mm_flags & AV_CPU_FLAG_MMX2) {
+
+        c->h264_loop_filter_strength= h264_loop_filter_strength_mmx2;
+
+    }
+
+#if HAVE_YASM
+
+    if (mm_flags & AV_CPU_FLAG_MMX) {
+
+        c->h264_idct_dc_add=
+
+        c->h264_idct_add= ff_h264_idct_add_mmx;
+
+        c->h264_idct8_dc_add=
+
+        c->h264_idct8_add= ff_h264_idct8_add_mmx;
+
+
+
+        c->h264_idct_add16     = ff_h264_idct_add16_mmx;
+
+        c->h264_idct8_add4     = ff_h264_idct8_add4_mmx;
+
+        c->h264_idct_add8      = ff_h264_idct_add8_mmx;
+
+        c->h264_idct_add16intra= ff_h264_idct_add16intra_mmx;
+
+
+
+        if (mm_flags & AV_CPU_FLAG_MMX2) {
+
+            c->h264_idc"
+14459,FN,long_function_or_truncation,weak_or_misleading_line_signal,1,0,0.07797278,196,1,5.2,"L119:5.2:dangerous_api,pointer_or_array,unchecked_sensitive_call:/* free format: compute bitrate and real frame size from the | L169:3.3:pointer_or_array,branch_or_loop,symbol_dense:if (s->layer == 3) { | L63:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:if (s->mode == MPA_MONO) | L79:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:switch(s->layer) { | L125:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:switch(s->layer) {",FN：风险行中的 free 来自注释文本 free format，并非内存释放调用；静态关键词信号有误导性，模型未能从解码头部逻辑中识别真实漏洞条件。,"static int decode_header(MPADecodeContext *s, UINT32 header)
+
+{
+
+    int sample_rate, frame_size, mpeg25, padding;
+
+    int sample_rate_index, bitrate_index;
+
+    if (header & (1<<20)) {
+
+        s->lsf = (header & (1<<19)) ? 0 : 1;
+
+        mpeg25 = 0;
+
+    } else {
+
+        s->lsf = 1;
+
+        mpeg25 = 1;
+
+    }
+
+    
+
+    s->layer = 4 - ((header >> 17) & 3);
+
+    /* extract frequency */
+
+    sample_rate_index = (header >> 10) & 3;
+
+    sample_rate = mpa_freq_tab[sample_rate_index] >> (s->lsf + mpeg25);
+
+    if (sample_rate == 0)
+
+        return 1;
+
+    sample_rate_index += 3 * (s->lsf + mpeg25);
+
+    s->sample_rate_index = sample_rate_index;
+
+    s->error_protection = ((header >> 16) & 1) ^ 1;
+
+
+
+    bitrate_index = (header >> 12) & 0xf;
+
+    padding = (header >> 9) & 1;
+
+    //extension = (header >> 8) & 1;
+
+    s->mode = (header >> 6) & 3;
+
+    s->mode_ext = (header >> 4) & 3;
+
+    //copyright = (header >> 3) & 1;
+
+    //original = (header >> 2) & 1;
+
+    //emphasis = header & 3;
+
+
+
+    if (s->mode == MPA_MONO)
+
+        s->nb_channels = 1;
+
+    else
+
+        s->nb_channels = 2;
+
+    
+
+    if (bitrate_index != 0) {
+
+        frame_size = mpa_bitrate_tab[s->lsf][s->layer - 1][bitrate_index];
+
+        s->bit_rate = frame_size * 1000;
+
+        switch(s->layer) {
+
+        case 1:
+
+            frame_size = (frame_size * 12000) / sample_rate;
+
+            frame_size = (frame_size + padding) * 4;
+
+            break;
+
+        case 2:
+
+            frame_size = (frame_size * 144000) / sample_rate;
+
+            frame_size += padding;
+
+            break;
+
+        default:
+
+        case 3:
+
+            frame_size = (frame_size * 144000) / (sample_rate << s->lsf);
+
+            frame_size += padding;
+
+            break;
+
+        }
+
+        s->frame_size = frame_size;
+
+    } else {"
+15002,FN,long_function_or_truncation,semantic_or_context_dependent_vulnerability,1,0,0.15546273,232,0,2.9,"L63:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:if (skip_flag || lc->pu.merge_flag) { | L95:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:for (j = 0; j < nPbH >> s->sps->log2_min_pu_size; j++) | L97:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:for (i = 0; i < nPbW >> s->sps->log2_min_pu_size; i++) | L11:2.7:pointer_or_array,medium_long_line,symbol_dense:&s->frame->data[c_idx][((y) >> s->sps->vshift[c_idx]) * s->frame->linesize[c_idx] + \ | L155:2.7:pointer_or_array,long_line,moderately_symbol_dense:s->sh.chroma_weight_l0[current_mv.ref_idx[0]][0], s->sh.chroma_offset_l0[current_mv.ref_idx[0]][0]);",FN：HEVC prediction unit 逻辑依赖运动矢量、参考帧和邻块状态；无明显危险 API，漏洞判断需要编解码领域语义而不是单行风险模式。,"static void hls_prediction_unit(HEVCContext *s, int x0, int y0,
+
+                                int nPbW, int nPbH,
+
+                                int log2_cb_size, int partIdx, int idx)
+
+{
+
+#define POS(c_idx, x, y)                                                              \
+
+    &s->frame->data[c_idx][((y) >> s->sps->vshift[c_idx]) * s->frame->linesize[c_idx] + \
+
+                           (((x) >> s->sps->hshift[c_idx]) << s->sps->pixel_shift)]
+
+    HEVCLocalContext *lc = s->HEVClc;
+
+    int merge_idx = 0;
+
+    struct MvField current_mv = {{{ 0 }}};
+
+
+
+    int min_pu_width = s->sps->min_pu_width;
+
+
+
+    MvField *tab_mvf = s->ref->tab_mvf;
+
+    RefPicList  *refPicList = s->ref->refPicList;
+
+    HEVCFrame *ref0, *ref1;
+
+    uint8_t *dst0 = POS(0, x0, y0);
+
+    uint8_t *dst1 = POS(1, x0, y0);
+
+    uint8_t *dst2 = POS(2, x0, y0);
+
+    int log2_min_cb_size = s->sps->log2_min_cb_size;
+
+    int min_cb_width     = s->sps->min_cb_width;
+
+    int x_cb             = x0 >> log2_min_cb_size;
+
+    int y_cb             = y0 >> log2_min_cb_size;
+
+    int x_pu, y_pu;
+
+    int i, j;
+
+
+
+    int skip_flag = SAMPLE_CTB(s->skip_flag, x_cb, y_cb);
+
+
+
+    if (!skip_flag)
+
+        lc->pu.merge_flag = ff_hevc_merge_flag_decode(s);
+
+
+
+    if (skip_flag || lc->pu.merge_flag) {
+
+        if (s->sh.max_num_merge_cand > 1)
+
+            merge_idx = ff_hevc_merge_idx_decode(s);
+
+        else
+
+            merge_idx = 0;
+
+
+
+        ff_hevc_luma_mv_merge_mode(s, x0, y0, nPbW, nPbH, log2_cb_size,
+
+                                   partIdx, merge_idx, &current_mv);
+
+    } else {
+
+        hevc_luma_mv_mpv_mode(s, x0, y0, nPbW, nPbH, log2_cb_size,
+
+                              partIdx, merge_idx, &current_mv);
+
+    }
+
+
+
+    x_pu = x0 >> s->sps->log2_min_pu_size;
+
+    y_pu = y0 >> s->sps->log2_min_pu"
+15136,FN,long_function_or_truncation,semantic_or_context_dependent_vulnerability,1,0,0.13513218,186,0,3.3,"L131:3.3:pointer_or_array,branch_or_loop,symbol_dense:if (!(env->cr[0] & CR0_PG_MASK)) { | L17:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:if (env->cr[4] & CR4_PAE_MASK) { | L149:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:if ((pde & PG_PSE_MASK) && (env->cr[4] & CR4_PSE_MASK)) { | L27:2.5:pointer_or_array,branch_or_loop:if (env->hflags & HF_LMA_MASK) { | L45:2.3:pointer_or_array,symbol_dense:pml4e_addr = ((env->cr[3] & ~0xfff) + (((addr >> 39) & 0x1ff) << 3)) &",FN：页表遍历和地址转换逻辑以位运算、掩码和页级状态为主；缺少危险 API，漏洞语义依赖体系结构上下文和边界条件。,"target_phys_addr_t cpu_get_phys_page_debug(CPUState *env, target_ulong addr)
+
+{
+
+    target_ulong pde_addr, pte_addr;
+
+    uint64_t pte;
+
+    target_phys_addr_t paddr;
+
+    uint32_t page_offset;
+
+    int page_size;
+
+
+
+    if (env->cr[4] & CR4_PAE_MASK) {
+
+        target_ulong pdpe_addr;
+
+        uint64_t pde, pdpe;
+
+
+
+#ifdef TARGET_X86_64
+
+        if (env->hflags & HF_LMA_MASK) {
+
+            uint64_t pml4e_addr, pml4e;
+
+            int32_t sext;
+
+
+
+            /* test virtual address sign extension */
+
+            sext = (int64_t)addr >> 47;
+
+            if (sext != 0 && sext != -1)
+
+                return -1;
+
+
+
+            pml4e_addr = ((env->cr[3] & ~0xfff) + (((addr >> 39) & 0x1ff) << 3)) &
+
+                env->a20_mask;
+
+            pml4e = ldq_phys(pml4e_addr);
+
+            if (!(pml4e & PG_PRESENT_MASK))
+
+                return -1;
+
+
+
+            pdpe_addr = ((pml4e & ~0xfff) + (((addr >> 30) & 0x1ff) << 3)) &
+
+                env->a20_mask;
+
+            pdpe = ldq_phys(pdpe_addr);
+
+            if (!(pdpe & PG_PRESENT_MASK))
+
+                return -1;
+
+        } else
+
+#endif
+
+        {
+
+            pdpe_addr = ((env->cr[3] & ~0x1f) + ((addr >> 27) & 0x18)) &
+
+                env->a20_mask;
+
+            pdpe = ldq_phys(pdpe_addr);
+
+            if (!(pdpe & PG_PRESENT_MASK))
+
+                return -1;
+
+        }
+
+
+
+        pde_addr = ((pdpe & ~0xfff) + (((addr >> 21) & 0x1ff) << 3)) &
+
+            env->a20_mask;
+
+        pde = ldq_phys(pde_addr);
+
+        if (!(pde & PG_PRESENT_MASK)) {
+
+            return -1;
+
+        }
+
+        if (pde & PG_PSE_MASK) {
+
+            /* 2 MB page */
+
+            page_size = 2048 * 1024;
+
+            pte = pde & ~( (page_size - 1) & ~0xfff); /* align to page_size */
+
+        } else {
+
+            /* 4 KB page */
+
+            pte"
+15999,FN,long_function_or_truncation,long_function_or_truncation,1,0,0.19299525,550,0,2.9,"L29:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:if (cpu->vcpu_dirty) { | L51:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:if (!cpu_is_bsp(X86_CPU(cpu)) && cpu->halted) { | L111:2.5:pointer_or_array,branch_or_loop:if (!((cpu->interrupt_request & CPU_INTERRUPT_HARD) && | L139:2.5:pointer_or_array,branch_or_loop:/* Need to check if MMIO or unmmaped fault */ | L465:2.5:pointer_or_array,branch_or_loop:case EXIT_REASON_APIC_ACCESS: { /* TODO */",FN：hvf_vcpu_exec 是很长的虚拟机执行循环，分支、异常和事件处理路径复杂；短上下文下模型难以覆盖完整状态转移。,"int hvf_vcpu_exec(CPUState *cpu)
+
+{
+
+    X86CPU *x86_cpu = X86_CPU(cpu);
+
+    CPUX86State *env = &x86_cpu->env;
+
+    int ret = 0;
+
+    uint64_t rip = 0;
+
+
+
+    cpu->halted = 0;
+
+
+
+    if (hvf_process_events(cpu)) {
+
+        return EXCP_HLT;
+
+    }
+
+
+
+    do {
+
+        if (cpu->vcpu_dirty) {
+
+            hvf_put_registers(cpu);
+
+            cpu->vcpu_dirty = false;
+
+        }
+
+
+
+        if (hvf_inject_interrupts(cpu)) {
+
+            return EXCP_INTERRUPT;
+
+        }
+
+        vmx_update_tpr(cpu);
+
+
+
+        qemu_mutex_unlock_iothread();
+
+        if (!cpu_is_bsp(X86_CPU(cpu)) && cpu->halted) {
+
+            qemu_mutex_lock_iothread();
+
+            return EXCP_HLT;
+
+        }
+
+
+
+        hv_return_t r  = hv_vcpu_run(cpu->hvf_fd);
+
+        assert_hvf_ok(r);
+
+
+
+        /* handle VMEXIT */
+
+        uint64_t exit_reason = rvmcs(cpu->hvf_fd, VMCS_EXIT_REASON);
+
+        uint64_t exit_qual = rvmcs(cpu->hvf_fd, VMCS_EXIT_QUALIFICATION);
+
+        uint32_t ins_len = (uint32_t)rvmcs(cpu->hvf_fd,
+
+                                           VMCS_EXIT_INSTRUCTION_LENGTH);
+
+
+
+        uint64_t idtvec_info = rvmcs(cpu->hvf_fd, VMCS_IDT_VECTORING_INFO);
+
+
+
+        hvf_store_events(cpu, ins_len, idtvec_info);
+
+        rip = rreg(cpu->hvf_fd, HV_X86_RIP);
+
+        RFLAGS(env) = rreg(cpu->hvf_fd, HV_X86_RFLAGS);
+
+        env->eflags = RFLAGS(env);
+
+
+
+        qemu_mutex_lock_iothread();
+
+
+
+        update_apic_tpr(cpu);
+
+        current_cpu = cpu;
+
+
+
+        ret = 0;
+
+        switch (exit_reason) {
+
+        case EXIT_REASON_HLT: {
+
+            macvm_set_rip(cpu, rip + ins_len);
+
+            if (!((cpu->interrupt_request & CPU_INTERRUPT_HARD) &&
+
+                (EFLAGS(env) & IF_MASK))
+
+                && !(cpu->interrupt_request & CPU_INTERRUPT_NMI) &&
+
+                !(idtvec_info & VMCS_IDT_VEC"
+16352,FN,long_function_or_truncation,weak_or_misleading_line_signal,1,0,0.10495799,380,0,1.9,"L33:1.9:pointer_or_array,moderately_symbol_dense:data_regl = *args++; | L37:1.9:pointer_or_array,moderately_symbol_dense:data_regh = *args++; | L43:1.9:pointer_or_array,moderately_symbol_dense:addr_regl = *args++; | L47:1.9:pointer_or_array,moderately_symbol_dense:addr_regh = *args++; | L171:1.9:pointer_or_array,moderately_symbol_dense:/* slow path */",FN：max_risk_score 较低且无危险 API，主要是 TCG 代码生成和内存 load 语义；行级启发式几乎不给模型提供有效漏洞证据。,"static void tcg_out_qemu_ld(TCGContext *s, const TCGArg *args,
+
+                            int opc)
+
+{
+
+    int addr_regl, addr_reg1, addr_meml;
+
+    int data_regl, data_regh, data_reg1, data_reg2;
+
+    int mem_index, s_bits;
+
+#if defined(CONFIG_SOFTMMU)
+
+    void *label1_ptr, *label2_ptr;
+
+    int sp_args;
+
+#endif
+
+#if TARGET_LONG_BITS == 64
+
+# if defined(CONFIG_SOFTMMU)
+
+    uint8_t *label3_ptr;
+
+# endif
+
+    int addr_regh, addr_reg2, addr_memh;
+
+#endif
+
+    data_regl = *args++;
+
+    if (opc == 3)
+
+        data_regh = *args++;
+
+    else
+
+        data_regh = 0;
+
+    addr_regl = *args++;
+
+#if TARGET_LONG_BITS == 64
+
+    addr_regh = *args++;
+
+#endif
+
+    mem_index = *args;
+
+    s_bits = opc & 3;
+
+
+
+    if (opc == 3) {
+
+#if defined(TCG_TARGET_WORDS_BIGENDIAN)
+
+        data_reg1 = data_regh;
+
+        data_reg2 = data_regl;
+
+#else
+
+        data_reg1 = data_regl;
+
+        data_reg2 = data_regh;
+
+#endif
+
+    } else {
+
+        data_reg1 = data_regl;
+
+        data_reg2 = 0;
+
+    }
+
+#if TARGET_LONG_BITS == 64
+
+# if defined(TCG_TARGET_WORDS_BIGENDIAN)
+
+    addr_reg1 = addr_regh;
+
+    addr_reg2 = addr_regl;
+
+    addr_memh = 0;
+
+    addr_meml = 4;
+
+# else
+
+    addr_reg1 = addr_regl;
+
+    addr_reg2 = addr_regh;
+
+    addr_memh = 4;
+
+    addr_meml = 0;
+
+# endif
+
+#else
+
+    addr_reg1 = addr_regl;
+
+    addr_meml = 0;
+
+#endif
+
+
+
+#if defined(CONFIG_SOFTMMU)
+
+    tcg_out_opc_sa(s, OPC_SRL, TCG_REG_A0, addr_regl, TARGET_PAGE_BITS - CPU_TLB_ENTRY_BITS);
+
+    tcg_out_opc_imm(s, OPC_ANDI, TCG_REG_A0, TCG_REG_A0, (CPU_TLB_SIZE - 1) << CPU_TLB_ENTRY_BITS);
+
+    tcg_out_opc_reg(s, OPC_ADDU, TCG_REG_A0, TCG_REG_A0, TCG_AREG0);
+
+    tcg_out_opc_imm(s, OPC_LW, TCG_REG_AT, TCG_REG_A0,
+
+                    offsetof(CPUState, tlb_table[mem_index][0].addr_read) + addr_meml);
+
+    tcg_out_movi(s, TCG_TY"
+17932,FN,long_function_or_truncation,semantic_or_context_dependent_vulnerability,1,0,0.2641685,366,0,3.3,"L89:3.3:pointer_or_array,branch_or_loop,symbol_dense:if(ref[list] < 0 || (refb < ref[list] && refb >= 0)) | L93:3.3:pointer_or_array,branch_or_loop,symbol_dense:if(ref[list] < 0 || (refc < ref[list] && refc >= 0)) | L97:3.3:pointer_or_array,branch_or_loop,symbol_dense:if(ref[list] < 0) | L105:3.3:pointer_or_array,branch_or_loop,symbol_dense:if(ref[0] < 0 && ref[1] < 0){ | L117:3.3:pointer_or_array,branch_or_loop,symbol_dense:if(ref[list] >= 0)",FN：H264 direct motion prediction 依赖参考列表、运动矢量和宏块邻域关系；漏洞条件是领域状态组合，普通代码 token 很难直接暴露。,"static inline void pred_direct_motion(H264Context * const h, int *mb_type){
+
+    MpegEncContext * const s = &h->s;
+
+    const int mb_xy =   s->mb_x +   s->mb_y*s->mb_stride;
+
+    const int b8_xy = 2*s->mb_x + 2*s->mb_y*h->b8_stride;
+
+    const int b4_xy = 4*s->mb_x + 4*s->mb_y*h->b_stride;
+
+    const int mb_type_col = h->ref_list[1][0].mb_type[mb_xy];
+
+    const int16_t (*l1mv0)[2] = (const int16_t (*)[2]) &h->ref_list[1][0].motion_val[0][b4_xy];
+
+    const int16_t (*l1mv1)[2] = (const int16_t (*)[2]) &h->ref_list[1][0].motion_val[1][b4_xy];
+
+    const int8_t *l1ref0 = &h->ref_list[1][0].ref_index[0][b8_xy];
+
+    const int8_t *l1ref1 = &h->ref_list[1][0].ref_index[1][b8_xy];
+
+    const int is_b8x8 = IS_8X8(*mb_type);
+
+    int sub_mb_type;
+
+    int i8, i4;
+
+
+
+    if(IS_8X8(mb_type_col) && !h->sps.direct_8x8_inference_flag){
+
+        /* FIXME save sub mb types from previous frames (or derive from MVs)
+
+         * so we know exactly what block size to use */
+
+        sub_mb_type = MB_TYPE_8x8|MB_TYPE_P0L0|MB_TYPE_P0L1|MB_TYPE_DIRECT2; /* B_SUB_4x4 */
+
+        *mb_type =    MB_TYPE_8x8|MB_TYPE_L0L1;
+
+    }else if(!is_b8x8 && (IS_16X16(mb_type_col) || IS_INTRA(mb_type_col))){
+
+        sub_mb_type = MB_TYPE_16x16|MB_TYPE_P0L0|MB_TYPE_P0L1|MB_TYPE_DIRECT2; /* B_SUB_8x8 */
+
+        *mb_type =    MB_TYPE_16x16|MB_TYPE_P0L0|MB_TYPE_P0L1|MB_TYPE_DIRECT2; /* B_16x16 */
+
+    }else{
+
+        sub_mb_type = MB_TYPE_16x16|MB_TYPE_P0L0|MB_TYPE_P0L1|MB_TYPE_DIRECT2; /* B_SUB_8x8 */
+
+        *mb_type =    MB_TYPE_8x8|MB_TYPE_L0L1;
+
+    }
+
+    if(!is_b8x8)
+
+        *mb_type |= MB_TYPE_DIRECT2;
+
+
+
+    tprintf(""mb_type = %08x, sub_mb_type = %08x, is_b8x8 = %d, mb_type_col = %08x\n"", *mb_type, sub_mb_type, is_b8x8, mb_type_col);
+
+
+
+    if(h->direct_spatial_mv_pred){
+
+        int ref[2];
+
+     "
+10000,FP,control_flow_or_pointer_signal_only,control_flow_or_pointer_false_alarm,0,1,0.33166069,50,0,2.3,"L15:2.3:pointer_or_array,symbol_dense:s->pc++; | L23:2.3:pointer_or_array,symbol_dense:s->pc += 2; | L37:2.3:pointer_or_array,symbol_dense:s->pc += 4; | L13:1.9:pointer_or_array,moderately_symbol_dense:ret = cpu_ldub_code(env, s->pc); | L21:1.9:pointer_or_array,moderately_symbol_dense:ret = cpu_lduw_code(env, s->pc);",FP：insn_get 是指令读取辅助函数，包含 pc 自增和内存读取指针操作；这些低层访问形态被模型视为风险，但代码本身是受控取指流程。,"static inline uint32_t insn_get(CPUX86State *env, DisasContext *s, TCGMemOp ot)
+
+{
+
+    uint32_t ret;
+
+
+
+    switch (ot) {
+
+    case MO_8:
+
+        ret = cpu_ldub_code(env, s->pc);
+
+        s->pc++;
+
+        break;
+
+    case MO_16:
+
+        ret = cpu_lduw_code(env, s->pc);
+
+        s->pc += 2;
+
+        break;
+
+    case MO_32:
+
+#ifdef TARGET_X86_64
+
+    case MO_64:
+
+#endif
+
+        ret = cpu_ldl_code(env, s->pc);
+
+        s->pc += 4;
+
+        break;
+
+    default:
+
+        tcg_abort();
+
+    }
+
+    return ret;
+
+}
+"
+10049,FP,control_flow_or_pointer_signal_only,control_flow_or_pointer_false_alarm,0,1,0.33361176,144,0,2.9,"L23:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:if (env->external_htab) { | L109:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:if (env->external_htab) { | L79:2.5:pointer_or_array,branch_or_loop:*      but if we can speed-up the whole thing as the | L81:2.5:pointer_or_array,branch_or_loop:*      result would be undefined if PTEs are not consistent. | L43:2.3:pointer_or_array,symbol_dense:pteg_off + (i * 8), pte0, pte1, (int)(pte0 >> 31), h,",FP：find_pte32 是页表查询函数，指针/地址计算属于 MMU 逻辑的正常实现；模型把低层地址操作误判为漏洞证据。,"static int find_pte32(CPUPPCState *env, mmu_ctx_t *ctx, int h,
+
+                      int rw, int type, int target_page_bits)
+
+{
+
+    hwaddr pteg_off;
+
+    target_ulong pte0, pte1;
+
+    int i, good = -1;
+
+    int ret, r;
+
+
+
+    ret = -1; /* No entry found */
+
+    pteg_off = get_pteg_offset(env, ctx->hash[h], HASH_PTE_SIZE_32);
+
+    for (i = 0; i < 8; i++) {
+
+        if (env->external_htab) {
+
+            pte0 = ldl_p(env->external_htab + pteg_off + (i * 8));
+
+            pte1 = ldl_p(env->external_htab + pteg_off + (i * 8) + 4);
+
+        } else {
+
+            pte0 = ldl_phys(env->htab_base + pteg_off + (i * 8));
+
+            pte1 = ldl_phys(env->htab_base + pteg_off + (i * 8) + 4);
+
+        }
+
+        r = pte_check_hash32(ctx, pte0, pte1, h, rw, type);
+
+        LOG_MMU(""Load pte from %08"" HWADDR_PRIx "" => "" TARGET_FMT_lx "" ""
+
+                TARGET_FMT_lx "" %d %d %d "" TARGET_FMT_lx ""\n"",
+
+                pteg_off + (i * 8), pte0, pte1, (int)(pte0 >> 31), h,
+
+                (int)((pte0 >> 6) & 1), ctx->ptem);
+
+        switch (r) {
+
+        case -3:
+
+            /* PTE inconsistency */
+
+            return -1;
+
+        case -2:
+
+            /* Access violation */
+
+            ret = -2;
+
+            good = i;
+
+            break;
+
+        case -1:
+
+        default:
+
+            /* No PTE match */
+
+            break;
+
+        case 0:
+
+            /* access granted */
+
+            /* XXX: we should go on looping to check all PTEs consistency
+
+             *      but if we can speed-up the whole thing as the
+
+             *      result would be undefined if PTEs are not consistent.
+
+             */
+
+            ret = 0;
+
+            good = i;
+
+            goto done;
+
+        }
+
+    }
+
+    if (good != -1) {
+
+    done:
+
+        LOG_MMU(""found PTE at addr %08"" HWADDR_PRIx "" prot="
+10081,FP,control_flow_or_pointer_signal_only,benign_wrapper_or_accessor,0,1,0.44589144,16,0,1.5,"L1:1.5:pointer_or_array:static uint32_t gt64120_read_config(PCIDevice *d, uint32_t address, int len) | L3:0.8:symbol_dense:{ | L13:0.8:error_handling:return val; | L15:0.8:symbol_dense:} | L9:0.4:moderately_symbol_dense:val = bswap32(val);",FP：gt64120_read_config 只是配置读取和字节序转换包装，逻辑短且无复杂状态；模型对硬件配置访问模式过度敏感。,"static uint32_t gt64120_read_config(PCIDevice *d, uint32_t address, int len)
+
+{
+
+    uint32_t val = pci_default_read_config(d, address, len);
+
+#ifdef TARGET_WORDS_BIGENDIAN
+
+    val = bswap32(val);
+
+#endif
+
+    return val;
+
+}
+"
+10194,FP,control_flow_or_pointer_signal_only,error_or_resource_management_false_alarm,0,1,0.6052742,34,0,1.5,"L1:1.5:pointer_or_array:void process_incoming_migration(QEMUFile *f) | L27:1.4:branch_or_loop,moderately_symbol_dense:} else { | L5:1.0:branch_or_loop:if (qemu_loadvm_state(f) < 0) { | L23:1.0:branch_or_loop:if (autostart) { | L3:0.8:symbol_dense:{",FP：process_incoming_migration 主要是迁移加载失败后的错误处理和状态切换；错误路径、exit 分支和日志输出被模型当成漏洞信号。,"void process_incoming_migration(QEMUFile *f)
+
+{
+
+    if (qemu_loadvm_state(f) < 0) {
+
+        fprintf(stderr, ""load of migration failed\n"");
+
+        exit(0);
+
+    }
+
+    qemu_announce_self();
+
+    DPRINTF(""successfully loaded vm state\n"");
+
+
+
+    incoming_expected = false;
+
+
+
+    if (autostart) {
+
+        vm_start();
+
+    } else {
+
+        runstate_set(RSTATE_PRE_LAUNCH);
+
+    }
+
+}
+"
+10213,FP,control_flow_or_pointer_signal_only,control_flow_or_pointer_false_alarm,0,1,0.49145591,98,0,3.3,"L21:3.3:pointer_or_array,branch_or_loop,symbol_dense:if(!r->s.mb_skip_run) | L27:3.3:pointer_or_array,branch_or_loop,symbol_dense:if(--r->s.mb_skip_run) | L33:3.3:pointer_or_array,branch_or_loop,symbol_dense:if(r->avail_cache[6-1]) | L37:3.3:pointer_or_array,branch_or_loop,symbol_dense:if(r->avail_cache[6-4]){ | L41:3.3:pointer_or_array,branch_or_loop,symbol_dense:if(r->avail_cache[6-2])",FP：rv40_decode_mb_info 是编解码宏块解析逻辑，包含邻块数组和条件分支；这些复杂控制流在视频解码器中常见，不必然表示漏洞。,"static int rv40_decode_mb_info(RV34DecContext *r)
+
+{
+
+    MpegEncContext *s = &r->s;
+
+    GetBitContext *gb = &s->gb;
+
+    int q, i;
+
+    int prev_type = 0;
+
+    int mb_pos = s->mb_x + s->mb_y * s->mb_stride;
+
+    int blocks[RV34_MB_TYPES] = {0};
+
+    int count = 0;
+
+
+
+    if(!r->s.mb_skip_run)
+
+        r->s.mb_skip_run = svq3_get_ue_golomb(gb) + 1;
+
+
+
+    if(--r->s.mb_skip_run)
+
+         return RV34_MB_SKIP;
+
+
+
+    if(r->avail_cache[6-1])
+
+        blocks[r->mb_type[mb_pos - 1]]++;
+
+    if(r->avail_cache[6-4]){
+
+        blocks[r->mb_type[mb_pos - s->mb_stride]]++;
+
+        if(r->avail_cache[6-2])
+
+            blocks[r->mb_type[mb_pos - s->mb_stride + 1]]++;
+
+        if(r->avail_cache[6-5])
+
+            blocks[r->mb_type[mb_pos - s->mb_stride - 1]]++;
+
+    }
+
+
+
+    for(i = 0; i < RV34_MB_TYPES; i++){
+
+        if(blocks[i] > count){
+
+            count = blocks[i];
+
+            prev_type = i;
+
+        }
+
+    }
+
+    if(s->pict_type == AV_PICTURE_TYPE_P){
+
+        prev_type = block_num_to_ptype_vlc_num[prev_type];
+
+        q = get_vlc2(gb, ptype_vlc[prev_type].table, PTYPE_VLC_BITS, 1);
+
+        if(q < PBTYPE_ESCAPE)
+
+            return q;
+
+        q = get_vlc2(gb, ptype_vlc[prev_type].table, PTYPE_VLC_BITS, 1);
+
+        av_log(s->avctx, AV_LOG_ERROR, ""Dquant for P-frame\n"");
+
+    }else{
+
+        prev_type = block_num_to_btype_vlc_num[prev_type];
+
+        q = get_vlc2(gb, btype_vlc[prev_type].table, BTYPE_VLC_BITS, 1);
+
+        if(q < PBTYPE_ESCAPE)
+
+            return q;
+
+        q = get_vlc2(gb, btype_vlc[prev_type].table, BTYPE_VLC_BITS, 1);
+
+        av_log(s->avctx, AV_LOG_ERROR, ""Dquant for B-frame\n"");
+
+    }
+
+    return 0;
+
+}
+"
+10253,FP,control_flow_or_pointer_signal_only,io_or_parser_false_alarm,0,1,0.38329497,128,0,2.9,"L105:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:if (x > avctx->width || y > avctx->height) { | L69:2.5:pointer_or_array,branch_or_loop:if (!ctx->presentation.object_number) | L49:2.3:pointer_or_array,symbol_dense:/* | L59:2.3:pointer_or_array,symbol_dense:*/ | L75:2.3:pointer_or_array,symbol_dense:/*",FP：parse_presentation_segment 是字节流解析函数，虽然有偏移读取和尺寸检查，但代码包含明确的边界验证；解析器形态触发了过高风险判断。,"static int parse_presentation_segment(AVCodecContext *avctx,
+
+                                      const uint8_t *buf, int buf_size,
+
+                                      int64_t pts)
+
+{
+
+    PGSSubContext *ctx = avctx->priv_data;
+
+
+
+    int x, y, ret;
+
+
+
+    int w = bytestream_get_be16(&buf);
+
+    int h = bytestream_get_be16(&buf);
+
+
+
+    ctx->presentation.pts = pts;
+
+
+
+    av_dlog(avctx, ""Video Dimensions %dx%d\n"",
+
+            w, h);
+
+    ret = ff_set_dimensions(avctx, w, h);
+
+    if (ret < 0)
+
+        return ret;
+
+
+
+    /* Skip 1 bytes of unknown, frame rate? */
+
+    buf++;
+
+
+
+    ctx->presentation.id_number = bytestream_get_be16(&buf);
+
+
+
+    /*
+
+     * Skip 3 bytes of unknown:
+
+     *     state
+
+     *     palette_update_flag (0x80),
+
+     *     palette_id_to_use,
+
+     */
+
+    buf += 3;
+
+
+
+    ctx->presentation.object_number = bytestream_get_byte(&buf);
+
+    ctx->presentation.composition_flag = 0;
+
+    if (!ctx->presentation.object_number)
+
+        return 0;
+
+
+
+    /*
+
+     * Skip 3 bytes of unknown:
+
+     *     object_id_ref (2 bytes),
+
+     *     window_id_ref,
+
+     */
+
+    buf += 3;
+
+    ctx->presentation.composition_flag = bytestream_get_byte(&buf);
+
+
+
+    x = bytestream_get_be16(&buf);
+
+    y = bytestream_get_be16(&buf);
+
+
+
+    /* TODO If cropping, cropping_x, cropping_y, cropping_width, cropping_height (all 2 bytes).*/
+
+
+
+    av_dlog(avctx, ""Subtitle Placement x=%d, y=%d\n"", x, y);
+
+
+
+    if (x > avctx->width || y > avctx->height) {
+
+        av_log(avctx, AV_LOG_ERROR, ""Subtitle out of video bounds. x = %d, y = %d, video width = %d, video height = %d.\n"",
+
+               x, y, avctx->width, avctx->height);
+
+        x = 0; y = 0;
+
+    }
+
+
+
+    /* Fill in dimensions */
+
+    ctx->presentation.x = x;
+
+    ctx->presentation.y = y;
+
+
+
+    return 0;
+
+}
+"
+10266,FP,control_flow_or_pointer_signal_only,error_or_resource_management_false_alarm,0,1,0.60731387,30,0,2.7,"L15:2.7:pointer_or_array,error_handling,moderately_symbol_dense:co->base.caller = NULL; | L11:2.5:pointer_or_array,branch_or_loop:if (s->pool_size < POOL_MAX_SIZE) { | L17:2.3:pointer_or_array,symbol_dense:s->pool_size++; | L13:1.9:pointer_or_array,moderately_symbol_dense:QLIST_INSERT_HEAD(&s->pool, &co->base, pool_next); | L25:1.9:pointer_or_array,moderately_symbol_dense:g_free(co->stack);",FP：qemu_coroutine_delete 是协程生命周期和池化释放逻辑；资源释放、pool 链接和指针更新属于正常清理流程，被误判为危险。,"void qemu_coroutine_delete(Coroutine *co_)
+
+{
+
+    CoroutineThreadState *s = coroutine_get_thread_state();
+
+    CoroutineUContext *co = DO_UPCAST(CoroutineUContext, base, co_);
+
+
+
+    if (s->pool_size < POOL_MAX_SIZE) {
+
+        QLIST_INSERT_HEAD(&s->pool, &co->base, pool_next);
+
+        co->base.caller = NULL;
+
+        s->pool_size++;
+
+        return;
+
+    }
+
+
+
+    g_free(co->stack);
+
+    g_free(co);
+
+}
+"
+10322,FP,control_flow_or_pointer_signal_only,benign_wrapper_or_accessor,0,1,0.833121,8,0,2.3,"L5:2.3:pointer_or_array,error_handling:return pthread_equal(thread1->thread, thread2->thread); | L1:1.5:pointer_or_array:int qemu_thread_equal(QemuThread *thread1, QemuThread *thread2) | L3:0.8:symbol_dense:{ | L7:0.8:symbol_dense:}",FP：qemu_thread_equal 是 pthread_equal 的极短包装函数；几乎没有漏洞语义，模型可能被指针参数和线程 API 名称误导。,"int qemu_thread_equal(QemuThread *thread1, QemuThread *thread2)
+
+{
+
+   return pthread_equal(thread1->thread, thread2->thread);
+
+}
+"
+10327,FP,control_flow_or_pointer_signal_only,io_or_parser_false_alarm,0,1,0.50317377,86,0,3.7,"L67:3.7:pointer_or_array,branch_or_loop,io_or_process_api,moderately_symbol_dense:if (write(s->peers[dest].eventfds[vector], | L49:3.3:pointer_or_array,branch_or_loop,symbol_dense:if ((dest < 0) || (dest > s->max_peer)) { | L61:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:if ((vector >= 0) && (vector < s->peers[dest].nb_eventfds)) { | L1:1.5:pointer_or_array:static void ivshmem_io_writel(void *opaque, target_phys_addr_t addr, | L7:1.5:pointer_or_array:IVShmemState *s = opaque;",FP：ivshmem_io_writel 是设备 MMIO 写处理，包含向量边界检查和 eventfd 写入；I/O 操作与分支较多，但已有显式约束。,"static void ivshmem_io_writel(void *opaque, target_phys_addr_t addr,
+
+                                                            uint32_t val)
+
+{
+
+    IVShmemState *s = opaque;
+
+
+
+    uint64_t write_one = 1;
+
+    uint16_t dest = val >> 16;
+
+    uint16_t vector = val & 0xff;
+
+
+
+    addr &= 0xfc;
+
+
+
+    IVSHMEM_DPRINTF(""writing to addr "" TARGET_FMT_plx ""\n"", addr);
+
+    switch (addr)
+
+    {
+
+        case INTRMASK:
+
+            ivshmem_IntrMask_write(s, val);
+
+            break;
+
+
+
+        case INTRSTATUS:
+
+            ivshmem_IntrStatus_write(s, val);
+
+            break;
+
+
+
+        case DOORBELL:
+
+            /* check that dest VM ID is reasonable */
+
+            if ((dest < 0) || (dest > s->max_peer)) {
+
+                IVSHMEM_DPRINTF(""Invalid destination VM ID (%d)\n"", dest);
+
+                break;
+
+            }
+
+
+
+            /* check doorbell range */
+
+            if ((vector >= 0) && (vector < s->peers[dest].nb_eventfds)) {
+
+                IVSHMEM_DPRINTF(""Writing %"" PRId64 "" to VM %d on vector %d\n"",
+
+                                                    write_one, dest, vector);
+
+                if (write(s->peers[dest].eventfds[vector],
+
+                                                    &(write_one), 8) != 8) {
+
+                    IVSHMEM_DPRINTF(""error writing to eventfd\n"");
+
+                }
+
+            }
+
+            break;
+
+        default:
+
+            IVSHMEM_DPRINTF(""Invalid VM Doorbell VM %d\n"", dest);
+
+    }
+
+}
+"
+10364,FP,control_flow_or_pointer_signal_only,error_or_resource_management_false_alarm,0,1,0.3598139,136,0,1.9,"L27:1.9:pointer_or_array,moderately_symbol_dense:/* Can't execute command. */ | L33:1.8:branch_or_loop,symbol_dense:if (!ccw.cda) { | L51:1.6:error_handling,symbol_dense:NULL); | L61:1.6:error_handling,symbol_dense:NULL); | L73:1.6:error_handling,symbol_dense:NULL);",FP：virtio_ccw_handle_set_vq 包含大量 NULL 检查、错误返回和地址校验；防御式错误处理形态提高了风险分数但样本标签为安全。,"static int virtio_ccw_handle_set_vq(SubchDev *sch, CCW1 ccw, bool check_len,
+
+                                    bool is_legacy)
+
+{
+
+    int ret;
+
+    VqInfoBlock info;
+
+    VqInfoBlockLegacy linfo;
+
+    size_t info_len = is_legacy ? sizeof(linfo) : sizeof(info);
+
+
+
+    if (check_len) {
+
+        if (ccw.count != info_len) {
+
+            return -EINVAL;
+
+        }
+
+    } else if (ccw.count < info_len) {
+
+        /* Can't execute command. */
+
+        return -EINVAL;
+
+    }
+
+    if (!ccw.cda) {
+
+        return -EFAULT;
+
+    }
+
+    if (is_legacy) {
+
+        linfo.queue = address_space_ldq_be(&address_space_memory, ccw.cda,
+
+                                           MEMTXATTRS_UNSPECIFIED, NULL);
+
+        linfo.align = address_space_ldl_be(&address_space_memory,
+
+                                           ccw.cda + sizeof(linfo.queue),
+
+                                           MEMTXATTRS_UNSPECIFIED,
+
+                                           NULL);
+
+        linfo.index = address_space_lduw_be(&address_space_memory,
+
+                                            ccw.cda + sizeof(linfo.queue)
+
+                                            + sizeof(linfo.align),
+
+                                            MEMTXATTRS_UNSPECIFIED,
+
+                                            NULL);
+
+        linfo.num = address_space_lduw_be(&address_space_memory,
+
+                                          ccw.cda + sizeof(linfo.queue)
+
+                                          + sizeof(linfo.align)
+
+                                          + sizeof(linfo.index),
+
+                                          MEMTXATTRS_UNSPECIFIED,
+
+                                          NULL);
+
+        ret = virtio_ccw_set_vqs(sch, NULL, &linfo);
+
+    } else {
+
+        info.desc = address_space_ldq_be(&addres"
+10370,FP,control_flow_or_pointer_signal_only,error_or_resource_management_false_alarm,0,1,0.63366532,28,0,2.7,"L21:2.7:pointer_or_array,error_handling,moderately_symbol_dense:client->info = NULL; | L5:2.3:pointer_or_array,error_handling:Error *err = NULL; | L9:1.9:pointer_or_array,moderately_symbol_dense:client->info = g_malloc0(sizeof(*client->info)); | L11:1.9:pointer_or_array,moderately_symbol_dense:client->info->base = g_malloc0(sizeof(*client->info->base)); | L17:1.8:branch_or_loop,symbol_dense:if (err) {",FP：vnc_client_cache_addr 主要是分配、缓存和失败清理路径；g_malloc0/free 风格的资源管理被模型误读为漏洞上下文。,"static void vnc_client_cache_addr(VncState *client)
+
+{
+
+    Error *err = NULL;
+
+
+
+    client->info = g_malloc0(sizeof(*client->info));
+
+    client->info->base = g_malloc0(sizeof(*client->info->base));
+
+    vnc_init_basic_info_from_remote_addr(client->csock, client->info->base,
+
+                                         &err);
+
+    if (err) {
+
+        qapi_free_VncClientInfo(client->info);
+
+        client->info = NULL;
+
+        error_free(err);
+
+    }
+
+}
+"
+10385,FP,control_flow_or_pointer_signal_only,io_or_parser_false_alarm,0,1,0.44736975,52,0,3.3,"L15:3.3:pointer_or_array,branch_or_loop,symbol_dense:if (s->max_size == 0) | L37:2.9:pointer_or_array,branch_or_loop,moderately_symbol_dense:while (s->max_size > 0 && s->bufptr < s->bufcnt) { | L35:2.3:pointer_or_array,symbol_dense:s->bufptr = 0; | L41:2.3:pointer_or_array,symbol_dense:s->bufptr++; | L19:1.9:pointer_or_array,moderately_symbol_dense:status = g_io_channel_read_chars(s->chan, (gchar *)s->buf, sizeof(s->buf),",FP：udp_chr_read 是 UDP/GIO 读取循环，包含缓冲区和后端写入；I/O 循环形态容易触发风险，但函数整体是常规数据转发。,"static gboolean udp_chr_read(GIOChannel *chan, GIOCondition cond, void *opaque)
+
+{
+
+    CharDriverState *chr = opaque;
+
+    NetCharDriver *s = chr->opaque;
+
+    gsize bytes_read = 0;
+
+    GIOStatus status;
+
+
+
+    if (s->max_size == 0)
+
+        return FALSE;
+
+    status = g_io_channel_read_chars(s->chan, (gchar *)s->buf, sizeof(s->buf),
+
+                                     &bytes_read, NULL);
+
+    s->bufcnt = bytes_read;
+
+    s->bufptr = s->bufcnt;
+
+    if (status != G_IO_STATUS_NORMAL) {
+
+        return FALSE;
+
+    }
+
+
+
+    s->bufptr = 0;
+
+    while (s->max_size > 0 && s->bufptr < s->bufcnt) {
+
+        qemu_chr_be_write(chr, &s->buf[s->bufptr], 1);
+
+        s->bufptr++;
+
+        s->max_size = qemu_chr_be_can_write(chr);
+
+    }
+
+
+
+    return TRUE;
+
+}
+"
