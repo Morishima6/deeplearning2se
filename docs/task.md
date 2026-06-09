@@ -358,8 +358,8 @@ bash scripts/collect_ablation_results.sh
 
 目标：完成 4000-6000 字 PDF 报告。
 
-- [ ] 写引言。
-- [ ] 写相关工作。
+- [x] 写引言。
+- [x] 写相关工作。
 - [ ] 写深度学习技术原理。
 - [x] 写 LOSVER-Light 方法。
 - [x] 写实验设计：RQ、Dataset、Baseline、Metric、Environment。

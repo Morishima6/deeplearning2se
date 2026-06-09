@@ -254,3 +254,11 @@
 - 说明：
   - 实验环境按当前项目实际设置记录：2 × RTX 3090、Python 3.10、PyTorch 2.4.0、Transformers 4.48.0、PEFT 0.14.0、Accelerate 1.0.1。
   - 章节中的复现命令指向仓库现有脚本，不直接包含模型权重或数据大文件路径入库。
+
+## 2026-06-09 报告引言与相关工作章节
+
+- 本次目标：补齐最终报告中的引言与相关工作部分。
+- 已完成：
+  - 新增 `reports/intro_related_work.md`。
+  - 内容覆盖漏洞检测任务动机、函数级二分类基准局限、LOSVER 行级信号思想、跨函数语义补全、输入位置敏感、benchmark shortcut、代码度量视角和可解释性。
+  - 附上主要参考文献入口，包括 ASE 2025 LOSVER、ISSTA 2025 VulnSC、FSE 2025 Lost-in-the-End、ISSTA 2025 benchmark 反思、ICSE 2026 code metrics 视角和 TSE 2025 explainable VD。
