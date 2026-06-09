@@ -24,6 +24,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--out-dir", "--out", dest="out_dir", default=f"{DATA_ROOT}/processed/devign_losver")
     parser.add_argument("--top-k", "--top_k", dest="top_k", type=int, default=5)
     parser.add_argument("--stats-out", default="reports/tables")
+    parser.add_argument("--stats-name", default="line_signal_stats")
     return parser.parse_args()
 
 
@@ -62,7 +63,7 @@ def summarize_split(rows: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def write_stats(stats: dict[str, dict[str, Any]], out_dir: Path, stats_out: Path | None) -> None:
+def write_stats(stats: dict[str, dict[str, Any]], out_dir: Path, stats_out: Path | None, stats_name: str) -> None:
     fieldnames = [
         "split",
         "num_samples",
@@ -76,22 +77,22 @@ def write_stats(stats: dict[str, dict[str, Any]], out_dir: Path, stats_out: Path
         "avg_tag_prefix_chars",
     ]
     out_dir.mkdir(parents=True, exist_ok=True)
-    csv_path = out_dir / "line_signal_stats.csv"
+    csv_path = out_dir / f"{stats_name}.csv"
     with csv_path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
         for split, values in stats.items():
             writer.writerow({"split": split, **values})
 
-    json_path = out_dir / "line_signal_stats.json"
+    json_path = out_dir / f"{stats_name}.json"
     json_path.write_text(json.dumps(stats, indent=2, ensure_ascii=False), encoding="utf-8")
 
     if stats_out is not None:
         stats_out.mkdir(parents=True, exist_ok=True)
-        (stats_out / "line_signal_stats.csv").write_text(
+        (stats_out / f"{stats_name}.csv").write_text(
             csv_path.read_text(encoding="utf-8"), encoding="utf-8", newline="\n"
         )
-        (stats_out / "line_signal_stats.json").write_text(
+        (stats_out / f"{stats_name}.json").write_text(
             json_path.read_text(encoding="utf-8"), encoding="utf-8"
         )
 
@@ -109,7 +110,7 @@ def main() -> None:
         stats[split] = summarize_split(processed)
 
     stats_out = Path(args.stats_out) if args.stats_out else None
-    write_stats(stats, out_dir, stats_out)
+    write_stats(stats, out_dir, stats_out, args.stats_name)
     print(f"Processed data written to: {out_dir}")
     print(json.dumps(stats, indent=2, ensure_ascii=False))
 

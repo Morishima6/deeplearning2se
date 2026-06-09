@@ -202,3 +202,18 @@
   - 基于 `reports/tables/error_cases.csv` 做人工错例归类。
   - 写报告实验结果与分析部分。
   - 如时间允许，补充 top-k 或第二 seed 小消融。
+
+## 2026-06-09 消融与错例分析设计
+
+- 本次目标：在主实验已完成的基础上，按“人工错例分析 > top_k 消融 > max_length=768 消融”的优先级补充后续实验设计与脚本。
+- 已完成：
+  - 新增 `src/manual_error_review.py`，从预测错例中抽样 FP/FN，并基于函数长度、危险 API、风险分数自动给出初始错误类别。
+  - 新增 `scripts/prepare_manual_error_review.sh`，生成 `reports/tables/manual_error_review.csv` 和 `reports/tables/manual_error_summary.csv`。
+  - 新增 `configs/losver_light_tag_topk3.yaml` 和 `configs/losver_light_tag_topk8.yaml`。
+  - 新增 `scripts/run_topk_ablation.sh`，生成 top_k=3/8 的 processed 数据并分别训练 LOSVER-Light Tag。
+  - 新增 `scripts/collect_ablation_results.sh`，汇总 top_k=3/5/8 消融结果。
+  - 新增 `configs/losver_light_tag_maxlen768.yaml` 作为可选长输入配置，但不默认执行。
+- 设计决策：
+  - 人工错例分析优先，因为它不需要再跑模型，能直接增强报告分析质量。
+  - top_k 消融只跑 LOSVER-Light Tag，因为 Tag 是当前最好方法，消融目标更聚焦。
+  - max_length=768 成本较高，且主题不如 top_k 直接，默认只保留配置作为可选扩展。

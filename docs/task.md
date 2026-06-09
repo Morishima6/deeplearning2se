@@ -313,6 +313,9 @@ accelerate launch --multi_gpu --mixed_precision fp16 --num_processes 2 src/train
 - [x] 实现 `src/evaluate.py` 汇总结果表。
 - [x] 实现 `src/plot_results.py` 生成结果柱状图。
 - [ ] 生成混淆矩阵和结果柱状图。
+- [x] 实现 `src/manual_error_review.py`，生成可人工标注的错例分析表。
+- [x] 准备 `top_k=3/8` 消融脚本和配置。
+- [x] 准备 `max_length=768` 可选配置，但默认不执行。
 
 推荐命令：
 
@@ -323,6 +326,19 @@ python src/error_analysis.py \
   --data "$DLSE_DATA_ROOT/processed/devign_losver/test.jsonl" \
   --out reports/tables/error_cases.csv
 python src/plot_results.py --results reports/tables/main_results.csv --out reports/figures/main_results.png
+```
+
+当前推荐优先级：
+
+```bash
+# 1. 先做人工错例分析表，人工填写 manual_category/manual_note
+bash scripts/prepare_manual_error_review.sh
+
+# 2. 如时间允许，再跑 top_k=3/8 消融
+bash scripts/run_topk_ablation.sh
+bash scripts/collect_ablation_results.sh
+
+# 3. max_length=768 仅作为可选配置，不默认执行
 ```
 
 验收标准：
