@@ -234,3 +234,13 @@
   - `top_k=3` 风险行过少，Recall 明显下降，说明关键漏洞上下文可能被漏选。
   - `top_k=8` 提升 Recall，但 Precision 和 Accuracy 下降，说明更多风险行会引入噪声和误报。
   - 报告中可将该实验作为 RQ4/消融分析：LOSVER-Light 的收益依赖适中的行级信号数量，风险行并非越多越好。
+
+## 2026-06-09 报告方法与结果章节
+
+- 本次目标：开始撰写最终 PDF 可复用的报告正文草稿。
+- 已完成：
+  - 新增 `reports/experiment_results.md`，覆盖数据集、主实验、RQ1/RQ2/RQ3、top-k 消融、人工错例分析和结论摘要。
+  - 新增 `reports/method.md`，覆盖 LOSVER-Light 方法设计、行级风险评分、输入构造、Metrics-Baseline、Qwen2.5-Coder + QLoRA 训练、阈值选择和与原始 LOSVER 的区别。
+- 说明：
+  - 两个章节中的数字均来自 `reports/tables/*.csv` 和对应训练输出。
+  - 方法章节按当前代码实现撰写，包括 4-bit NF4、LoRA rank=16、`top_k=5`、`max_length=512` 和验证集选阈值策略。
