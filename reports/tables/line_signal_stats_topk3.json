@@ -1,0 +1,35 @@
+{
+  "train": {
+    "num_samples": 21854,
+    "num_safe": 11836,
+    "num_vulnerable": 10018,
+    "avg_risk_lines": 2.994,
+    "median_risk_lines": 3.0,
+    "avg_max_risk_score": 2.853,
+    "avg_vanilla_chars": 2031.38,
+    "avg_tag_chars": 2070.29,
+    "avg_tag_prefix_chars": 2386.95
+  },
+  "valid": {
+    "num_samples": 2732,
+    "num_safe": 1545,
+    "num_vulnerable": 1187,
+    "avg_risk_lines": 2.993,
+    "median_risk_lines": 3.0,
+    "avg_max_risk_score": 2.896,
+    "avg_vanilla_chars": 1982.55,
+    "avg_tag_chars": 2021.46,
+    "avg_tag_prefix_chars": 2338.66
+  },
+  "test": {
+    "num_samples": 2732,
+    "num_safe": 1477,
+    "num_vulnerable": 1255,
+    "avg_risk_lines": 2.996,
+    "median_risk_lines": 3.0,
+    "avg_max_risk_score": 2.869,
+    "avg_vanilla_chars": 2006.05,
+    "avg_tag_chars": 2045.0,
+    "avg_tag_prefix_chars": 2363.23
+  }
+}

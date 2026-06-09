@@ -1,0 +1,4 @@
+run,model,text_field,seed,threshold,accuracy,precision,recall,f1,roc_auc,pr_auc,tn,fp,fn,tp
+run_losver_tag_seed42,Qwen/Qwen2.5-Coder-1.5B,text_tag,42,0.275,0.648243,0.580858,0.841434,0.687276,0.760319,0.75715,715,762,199,1056
+run_losver_tag_topk3_seed42,Qwen/Qwen2.5-Coder-1.5B,text_tag,42,0.34,0.644583,0.581703,0.805578,0.675576,0.755472,0.753953,750,727,244,1011
+run_losver_tag_topk8_seed42,Qwen/Qwen2.5-Coder-1.5B,text_tag,42,0.265,0.634334,0.567298,0.859761,0.68356,0.758302,0.757988,654,823,176,1079

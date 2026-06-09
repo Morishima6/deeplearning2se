@@ -217,3 +217,20 @@
   - 人工错例分析优先，因为它不需要再跑模型，能直接增强报告分析质量。
   - top_k 消融只跑 LOSVER-Light Tag，因为 Tag 是当前最好方法，消融目标更聚焦。
   - max_length=768 成本较高，且主题不如 top_k 直接，默认只保留配置作为可选扩展。
+
+## 2026-06-09 top-k 消融结果
+
+- 本次目标：完成 LOSVER-Light Tag 的 `top_k=3/5/8` 消融，并判断主实验默认 `top_k=5` 是否合理。
+- 已完成：
+  - 执行 `scripts/run_topk_ablation.sh`，完成 `top_k=3` 和 `top_k=8` 两组 Qwen2.5-Coder-1.5B + QLoRA 训练。
+  - 执行 `scripts/collect_ablation_results.sh`，生成 `reports/tables/ablation_results.csv`。
+  - 生成 `reports/figures/topk_ablation_results.png`。
+- 测试集结果：
+  - `top_k=3`：Accuracy=0.644583，Precision=0.581703，Recall=0.805578，F1=0.675576，ROC-AUC=0.755472，PR-AUC=0.753953。
+  - `top_k=5`：Accuracy=0.648243，Precision=0.580858，Recall=0.841434，F1=0.687276，ROC-AUC=0.760319，PR-AUC=0.757150。
+  - `top_k=8`：Accuracy=0.634334，Precision=0.567298，Recall=0.859761，F1=0.683560，ROC-AUC=0.758302，PR-AUC=0.757988。
+- 结论：
+  - `top_k=5` 仍是综合表现最好的主设置。
+  - `top_k=3` 风险行过少，Recall 明显下降，说明关键漏洞上下文可能被漏选。
+  - `top_k=8` 提升 Recall，但 Precision 和 Accuracy 下降，说明更多风险行会引入噪声和误报。
+  - 报告中可将该实验作为 RQ4/消融分析：LOSVER-Light 的收益依赖适中的行级信号数量，风险行并非越多越好。

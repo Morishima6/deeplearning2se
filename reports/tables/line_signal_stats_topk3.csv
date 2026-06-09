@@ -1,0 +1,4 @@
+split,num_samples,num_safe,num_vulnerable,avg_risk_lines,median_risk_lines,avg_max_risk_score,avg_vanilla_chars,avg_tag_chars,avg_tag_prefix_chars
+train,21854,11836,10018,2.994,3.0,2.853,2031.38,2070.29,2386.95
+valid,2732,1545,1187,2.993,3.0,2.896,1982.55,2021.46,2338.66
+test,2732,1477,1255,2.996,3.0,2.869,2006.05,2045.0,2363.23
