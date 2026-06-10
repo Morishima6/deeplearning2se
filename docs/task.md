@@ -360,7 +360,7 @@ bash scripts/collect_ablation_results.sh
 
 - [x] 写引言。
 - [x] 写相关工作。
-- [ ] 写深度学习技术原理。
+- [x] 写深度学习技术原理。
 - [x] 写 LOSVER-Light 方法。
 - [x] 写实验设计：RQ、Dataset、Baseline、Metric、Environment。
 - [x] 写实验结果与分析。
