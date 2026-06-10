@@ -285,3 +285,12 @@
   - `reports/method.md`
   - `reports/experiment_results.md`
   - `reports/limitations_conclusion.md`
+
+## 2026-06-10 最终报告校对版
+
+- 本次目标：在 `final_report_draft.md` 基础上生成可排版校对版。
+- 已完成：
+  - 新增 `reports/final_report_ready.md`，保留 draft 和五个原始章节草稿不动。
+  - 核对主实验与 top-k 消融关键指标均来自 CSV 表。
+  - 补充表题：表 1 主实验测试集结果、表 2 top-k 消融实验结果。
+  - 按中文字符口径统计，ready 版约 2160 个汉字，折算约 4320 字符，满足 4000-6000 字符要求。
