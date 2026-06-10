@@ -364,8 +364,8 @@ bash scripts/collect_ablation_results.sh
 - [x] 写 LOSVER-Light 方法。
 - [x] 写实验设计：RQ、Dataset、Baseline、Metric、Environment。
 - [x] 写实验结果与分析。
-- [ ] 写局限性与未来工作。
-- [ ] 写结论。
+- [x] 写局限性与未来工作。
+- [x] 写结论。
 - [ ] 校对引用、图表、实验数字。
 - [ ] 导出 PDF，命名为 `学号+姓名.pdf`。
 

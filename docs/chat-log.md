@@ -262,3 +262,12 @@
   - 新增 `reports/intro_related_work.md`。
   - 内容覆盖漏洞检测任务动机、函数级二分类基准局限、LOSVER 行级信号思想、跨函数语义补全、输入位置敏感、benchmark shortcut、代码度量视角和可解释性。
   - 附上主要参考文献入口，包括 ASE 2025 LOSVER、ISSTA 2025 VulnSC、FSE 2025 Lost-in-the-End、ISSTA 2025 benchmark 反思、ICSE 2026 code metrics 视角和 TSE 2025 explainable VD。
+
+## 2026-06-10 报告局限性与结论章节
+
+- 本次目标：补齐最终报告末尾的局限性、未来工作和结论。
+- 已完成：
+  - 新增 `reports/limitations_conclusion.md`。
+  - 内容覆盖非完整 LOSVER 复现、Devign 单数据集、单 seed、静态规则偏差、函数级上下文不足等局限。
+  - 总结未来方向：学习式行级定位、跨函数语义、PrimeVul/Big-Vul 外部验证、多种子复跑、解释生成。
+  - 结论部分收束主结果：LOSVER-Light Tag 最优，`top_k=5` 是较好折中，Metrics-Baseline 说明浅层模式存在但不可靠。
