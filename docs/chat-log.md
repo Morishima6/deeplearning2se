@@ -271,3 +271,17 @@
   - 内容覆盖非完整 LOSVER 复现、Devign 单数据集、单 seed、静态规则偏差、函数级上下文不足等局限。
   - 总结未来方向：学习式行级定位、跨函数语义、PrimeVul/Big-Vul 外部验证、多种子复跑、解释生成。
   - 结论部分收束主结果：LOSVER-Light Tag 最优，`top_k=5` 是较好折中，Metrics-Baseline 说明浅层模式存在但不可靠。
+
+## 2026-06-10 最终报告合并初稿
+
+- 本次目标：在保留五个原始章节草稿的基础上，生成可排版的最终报告合并稿。
+- 已完成：
+  - 新增 `reports/final_report_draft.md`。
+  - 合并并压缩引言与相关工作、深度学习技术原理与方法、实验设计、实验结果、局限性和结论。
+  - 按“一个汉字约 2 个字符”的课程口径统计，当前合并稿约 2144 个汉字，折算约 4288 字符，位于 4000-6000 要求范围内。
+- 保留文件：
+  - `reports/intro_related_work.md`
+  - `reports/experiment_setup.md`
+  - `reports/method.md`
+  - `reports/experiment_results.md`
+  - `reports/limitations_conclusion.md`
