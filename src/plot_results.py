@@ -12,7 +12,7 @@ import seaborn as sns
 
 
 RUN_LABELS = {
-    "run_metrics_seed42": "Metrics\nBaseline",
+    "run_metrics_seed42": "度量\n基线",
     "run_vanilla_seed42": "Vanilla\nQwen",
     "run_losver_tag_seed42": "LOSVER-Light\nTag",
     "run_losver_prefix_seed42": "LOSVER-Light\nTag+Prefix",
@@ -34,14 +34,14 @@ METRIC_LABELS = {
 }
 
 ERROR_LABELS = {
-    "error_or_resource_management_false_alarm": "Error/resource\nfalse alarm",
-    "long_function_or_truncation": "Long function\nor truncation",
-    "control_flow_or_pointer_false_alarm": "Control-flow /\npointer false alarm",
-    "io_or_parser_false_alarm": "I/O or parser\nfalse alarm",
-    "semantic_or_context_dependent_vulnerability": "Context-dependent\nvulnerability",
-    "weak_or_misleading_line_signal": "Weak/misleading\nline signal",
-    "benign_wrapper_or_accessor": "Benign wrapper\nor accessor",
-    "dangerous_api_missed_in_long_function": "Dangerous API\nmissed in long function",
+    "error_or_resource_management_false_alarm": "错误/资源管理\n误报",
+    "long_function_or_truncation": "长函数或\n截断",
+    "control_flow_or_pointer_false_alarm": "控制流/指针\n误报",
+    "io_or_parser_false_alarm": "I/O 或解析器\n误报",
+    "semantic_or_context_dependent_vulnerability": "上下文依赖\n漏洞",
+    "weak_or_misleading_line_signal": "弱/误导性\n行信号",
+    "benign_wrapper_or_accessor": "良性包装/访问器\n函数",
+    "dangerous_api_missed_in_long_function": "长函数中危险 API\n漏报",
 }
 
 
@@ -67,7 +67,16 @@ def configure_style() -> None:
             "ytick.color": "#1f2933",
             "text.color": "#1f2933",
             "axes.titleweight": "bold",
-            "font.family": "DejaVu Sans",
+            "font.family": "sans-serif",
+            "font.sans-serif": [
+                "Microsoft YaHei",
+                "SimHei",
+                "Noto Sans CJK SC",
+                "Source Han Sans SC",
+                "Arial Unicode MS",
+                "DejaVu Sans",
+            ],
+            "axes.unicode_minus": False,
             "savefig.bbox": "tight",
             "savefig.pad_inches": 0.12,
         }
@@ -124,7 +133,7 @@ def plot_main_results(csv_path: Path, out_path: Path, dpi: int) -> None:
         ax.text(
             tag_idx,
             0.807,
-            "best overall",
+            "综合最佳",
             ha="center",
             va="top",
             fontsize=8,
@@ -134,9 +143,9 @@ def plot_main_results(csv_path: Path, out_path: Path, dpi: int) -> None:
         )
 
     annotate_bars(ax, fontsize=7)
-    ax.set_title("Main Test Results")
+    ax.set_title("主实验测试集结果")
     ax.set_xlabel("")
-    ax.set_ylabel("Score")
+    ax.set_ylabel("分数")
     ax.set_ylim(0.45, 0.82)
     ax.legend(title="", ncol=3, loc="upper left", frameon=True, framealpha=0.96)
     ax.grid(axis="y", color="#d9dee7", linewidth=0.7)
@@ -190,7 +199,7 @@ def plot_topk_ablation(csv_path: Path, out_path: Path, dpi: int) -> None:
     best_f1 = df.loc[df["f1"].idxmax()]
     ax.scatter([best_f1["top_k"]], [best_f1["f1"]], s=120, color="#1F4E79", zorder=5)
     ax.annotate(
-        "best F1",
+        "最佳 F1",
         xy=(best_f1["top_k"], best_f1["f1"]),
         xytext=(best_f1["top_k"] + 0.25, best_f1["f1"] + 0.012),
         arrowprops={"arrowstyle": "->", "color": "#1F4E79", "lw": 1.0},
@@ -210,9 +219,9 @@ def plot_topk_ablation(csv_path: Path, out_path: Path, dpi: int) -> None:
             color="#27313d",
         )
 
-    ax.set_title("Top-k Ablation for LOSVER-Light Tag")
-    ax.set_xlabel("Number of marked risky lines (top-k)")
-    ax.set_ylabel("Score")
+    ax.set_title("LOSVER-Light Tag 的 top-k 消融")
+    ax.set_xlabel("标记的风险行数量 (top-k)")
+    ax.set_ylabel("分数")
     ax.set_xticks([3, 5, 8])
     ax.set_ylim(0.54, 0.89)
     ax.legend(title="", loc="lower right", frameon=True, framealpha=0.92)
@@ -255,8 +264,8 @@ def plot_error_summary(csv_path: Path, out_path: Path, dpi: int) -> None:
             fontweight="bold",
         )
 
-    ax.set_title("Manual Error Analysis Categories")
-    ax.set_xlabel("Number of reviewed cases")
+    ax.set_title("人工错例分析类别")
+    ax.set_xlabel("人工复核样本数")
     ax.set_ylabel("")
     ax.set_xlim(0, max(df["count"]) + 0.9)
     ax.grid(axis="x", color="#d9dee7", linewidth=0.7)
@@ -265,8 +274,8 @@ def plot_error_summary(csv_path: Path, out_path: Path, dpi: int) -> None:
     from matplotlib.patches import Patch
 
     legend_items = [
-        Patch(facecolor="#D98C72", edgecolor="#2f3a45", label="Mostly false positives"),
-        Patch(facecolor="#6C8EBF", edgecolor="#2f3a45", label="Mostly false negatives / weak signals"),
+        Patch(facecolor="#D98C72", edgecolor="#2f3a45", label="主要为误报"),
+        Patch(facecolor="#6C8EBF", edgecolor="#2f3a45", label="主要为漏报/弱信号"),
     ]
     ax.legend(handles=legend_items, loc="lower right", frameon=True, framealpha=0.92)
     sns.despine(ax=ax, left=False, bottom=False)
