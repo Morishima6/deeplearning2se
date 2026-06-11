@@ -101,9 +101,9 @@ def plot_main_results(csv_path: Path, out_path: Path, dpi: int) -> None:
     long_df["metric"] = long_df["metric"].map(METRIC_LABELS)
 
     palette = {
-        "F1": "#4C78A8",
-        "ROC-AUC": "#59A14F",
-        "PR-AUC": "#F28E2B",
+        "F1": "#4E79A7",
+        "ROC-AUC": "#76B7B2",
+        "PR-AUC": "#EDC948",
     }
 
     plt.figure(figsize=(8.4, 4.9))
@@ -120,7 +120,7 @@ def plot_main_results(csv_path: Path, out_path: Path, dpi: int) -> None:
 
     if "LOSVER-Light\nTag" in order:
         tag_idx = order.index("LOSVER-Light\nTag")
-        ax.axvspan(tag_idx - 0.48, tag_idx + 0.48, color="#F7DC6F", alpha=0.15, zorder=0)
+        ax.axvspan(tag_idx - 0.48, tag_idx + 0.48, color="#D8E2F3", alpha=0.28, zorder=0)
         ax.text(
             tag_idx,
             0.807,
@@ -128,7 +128,7 @@ def plot_main_results(csv_path: Path, out_path: Path, dpi: int) -> None:
             ha="center",
             va="top",
             fontsize=8,
-            color="#8A5A00",
+            color="#355C7D",
             fontweight="bold",
             clip_on=True,
         )
@@ -138,7 +138,7 @@ def plot_main_results(csv_path: Path, out_path: Path, dpi: int) -> None:
     ax.set_xlabel("")
     ax.set_ylabel("Score")
     ax.set_ylim(0.45, 0.82)
-    ax.legend(title="", ncol=3, loc="upper left", frameon=True, framealpha=0.94)
+    ax.legend(title="", ncol=3, loc="upper left", frameon=True, framealpha=0.96)
     ax.grid(axis="y", color="#d9dee7", linewidth=0.7)
     ax.grid(axis="x", visible=False)
     sns.despine(ax=ax, left=False, bottom=False)
@@ -235,7 +235,7 @@ def plot_error_summary(csv_path: Path, out_path: Path, dpi: int) -> None:
         "benign_wrapper_or_accessor",
     }
     colors = [
-        "#D95F02" if category in false_positive_categories else "#4C78A8"
+        "#D98C72" if category in false_positive_categories else "#6C8EBF"
         for category in df["manual_category"]
     ]
 
@@ -265,8 +265,8 @@ def plot_error_summary(csv_path: Path, out_path: Path, dpi: int) -> None:
     from matplotlib.patches import Patch
 
     legend_items = [
-        Patch(facecolor="#D95F02", edgecolor="#2f3a45", label="Mostly false positives"),
-        Patch(facecolor="#4C78A8", edgecolor="#2f3a45", label="Mostly false negatives / weak signals"),
+        Patch(facecolor="#D98C72", edgecolor="#2f3a45", label="Mostly false positives"),
+        Patch(facecolor="#6C8EBF", edgecolor="#2f3a45", label="Mostly false negatives / weak signals"),
     ]
     ax.legend(handles=legend_items, loc="lower right", frameon=True, framealpha=0.92)
     sns.despine(ax=ax, left=False, bottom=False)
