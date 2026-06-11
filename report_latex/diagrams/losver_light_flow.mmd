@@ -1,73 +1,51 @@
-flowchart TB
-  %% LOSVER-Light pipeline for the final report.
-  %% Recommended render size: 1400x1800, background #ffffff.
+flowchart LR
+  %% Compact LOSVER-Light pipeline for paper/report use.
+  %% Recommended render size: 1500x850, background #ffffff.
 
-  A0["CodeXGLUE / Devign Dataset<br/><b>C/C++ function</b> + <b>binary vulnerable label</b><br/>official train / valid / test split"]:::data
+  A["CodeXGLUE / Devign<br/><b>C/C++ function</b><br/>binary vulnerable label"]:::data
 
-  subgraph S0["0. Raw Data Export"]
-    direction LR
-    A1["export_hf_dataset.py<br/>normalize columns"]:::data
-    A2["train.jsonl<br/>valid.jsonl<br/>test.jsonl"]:::data
+  subgraph P["Preprocess"]
+    direction TB
+    B1["Line split"]:::process
+    B2["Code metrics<br/>for shallow baseline"]:::process
   end
 
-  subgraph S1["1. Function-Level Preprocessing"]
-    direction LR
-    B1["Line splitting<br/>preserve original line numbers"]:::process
-    B2["Code metrics extraction<br/>length, tokens, branches,<br/>pointer / array symbols,<br/>dangerous API counts"]:::process
+  subgraph R["Line-Risk Signal"]
+    direction TB
+    C1["Static risk scoring<br/>API + pointer + branch + length"]:::signal
+    C2["Rank lines"]:::signal
+    C3["Select top-k<br/><b>k=5</b>"]:::key
   end
 
-  subgraph S2["2. Static Line-Risk Signal"]
-    direction LR
-    C1["Risk feature extraction<br/>for every source line"]:::signal
-    C2["Lexical risk<br/>strcpy, memcpy, sprintf,<br/>malloc, free, recv, send"]:::signal
-    C3["Structural risk<br/>pointer / array access,<br/>branch / loop, error handling,<br/>long line, symbol density"]:::signal
-    C4["Risk ranking<br/>score desc + line number asc"]:::signal
-    C5["top-k risky lines<br/><b>default top_k = 5</b>"]:::key
+  subgraph I["Input Variants"]
+    direction TB
+    D1["Vanilla<br/>raw function"]:::variant
+    D2["Tag<br/><b>&lt;MOD&gt; risky line &lt;/MOD&gt;</b>"]:::variantStrong
+    D3["Tag + Prefix<br/>risk summary + tagged code"]:::variant
   end
 
-  subgraph S3["3. Three Controlled Input Views"]
-    direction LR
-    D1["Vanilla<br/>original function only<br/><i>baseline input</i>"]:::variant
-    D2["Tag<br/>mark top-k lines with<br/><b>&lt;MOD&gt; ... &lt;/MOD&gt;</b><br/><i>best variant</i>"]:::variantStrong
-    D3["Tag + Prefix<br/>risk-line summary first<br/>then tagged function<br/><i>stronger prompt</i>"]:::variant
+  subgraph M["Classifier"]
+    direction TB
+    E1["Qwen2.5-Coder-1.5B"]:::model
+    E2["4-bit QLoRA<br/>sequence classification"]:::model
   end
 
-  subgraph S4["4. Qwen2.5-Coder + QLoRA Classifier"]
-    direction LR
-    E1["Tokenizer extension<br/>add &lt;MOD&gt; special tokens"]:::model
-    E2["Qwen2.5-Coder-1.5B<br/>sequence classification head"]:::model
-    E3["4-bit QLoRA fine-tuning<br/>LoRA r=16, alpha=32<br/>fp16, max_length=512"]:::model
+  subgraph O["Evaluation"]
+    direction TB
+    F1["Validation F1 threshold"]:::eval
+    F2["Test metrics<br/>F1 / ROC-AUC / PR-AUC"]:::eval
+    F3["top-k ablation<br/>error review"]:::eval
   end
 
-  subgraph S5["5. Evaluation, Ablation and Error Analysis"]
-    direction LR
-    F1["Validation threshold search<br/>choose threshold maximizing F1"]:::eval
-    F2["Test metrics<br/>Accuracy, Precision, Recall,<br/>F1, ROC-AUC, PR-AUC"]:::eval
-    F3["top-k ablation<br/>3 / 5 / 8 risky lines"]:::eval
-    F4["Manual error review<br/>FP / FN categories<br/>long functions, context,<br/>resource handling, weak signals"]:::eval
-  end
+  G["Finding<br/><b>Tag</b> is the best<br/>line-signal injection"]:::result
 
-  G1["Main finding<br/><b>LOSVER-Light Tag</b> improves<br/>F1, ROC-AUC and PR-AUC<br/>over Vanilla Qwen"]:::result
-
-  A0 --> A1 --> A2 --> B1
-  B1 --> B2
-  B1 --> C1
-  C1 --> C2
-  C1 --> C3
-  C2 --> C4
-  C3 --> C4
-  C4 --> C5
-  C5 --> D1 & D2 & D3
-  D1 --> E1
-  D2 --> E1
-  D3 --> E1
-  E1 --> E2 --> E3
-  B2 -. "Logistic Regression<br/>metrics baseline" .-> F2
-  E3 --> F1 --> F2
-  E3 --> F3
-  F2 --> F4
-  F3 --> F4
-  F4 --> G1
+  A --> B1 --> C1 --> C2 --> C3
+  A --> B2
+  B2 -. "Metrics-Baseline" .-> F2
+  C3 --> D1 & D2 & D3
+  D1 & D2 & D3 --> E1 --> E2
+  E2 --> F1 --> F2 --> G
+  E2 --> F3 --> G
 
   classDef data fill:#eaf3ff,stroke:#2b6cb0,stroke-width:2px,color:#12355b;
   classDef process fill:#edf7ed,stroke:#2f855a,stroke-width:2px,color:#1f3b2d;
