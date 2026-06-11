@@ -68,10 +68,10 @@ def configure_style() -> None:
             "text.color": "#1f2933",
             "axes.titleweight": "bold",
             "axes.titlesize": 20,
-            "axes.labelsize": 16,
-            "xtick.labelsize": 14,
-            "ytick.labelsize": 14,
-            "legend.fontsize": 14,
+            "axes.labelsize": 13,
+            "xtick.labelsize": 11,
+            "ytick.labelsize": 11,
+            "legend.fontsize": 12,
             "font.family": "sans-serif",
             "font.sans-serif": [
                 "Microsoft YaHei",
@@ -141,13 +141,13 @@ def plot_main_results(csv_path: Path, out_path: Path, dpi: int) -> None:
             "综合最佳",
             ha="center",
             va="top",
-            fontsize=14,
+            fontsize=12,
             color="#355C7D",
             fontweight="bold",
             clip_on=True,
         )
 
-    annotate_bars(ax, fontsize=12)
+    annotate_bars(ax, fontsize=11)
     ax.set_title("主实验测试集结果")
     ax.set_xlabel("")
     ax.set_ylabel("分数")
@@ -208,7 +208,7 @@ def plot_topk_ablation(csv_path: Path, out_path: Path, dpi: int) -> None:
         xy=(best_f1["top_k"], best_f1["f1"]),
         xytext=(best_f1["top_k"] + 0.25, best_f1["f1"] + 0.012),
         arrowprops={"arrowstyle": "->", "color": "#1F4E79", "lw": 1.0},
-        fontsize=14,
+        fontsize=12,
         color="#1F4E79",
         fontweight="bold",
     )
@@ -220,7 +220,7 @@ def plot_topk_ablation(csv_path: Path, out_path: Path, dpi: int) -> None:
             f"{row['score']:.3f}",
             ha="center",
             va="bottom",
-            fontsize=11,
+            fontsize=10,
             color="#27313d",
         )
 
@@ -271,7 +271,7 @@ def plot_error_summary(csv_path: Path, out_path: Path, dpi: int) -> None:
             f"{int(width)}",
             va="center",
             ha="left",
-            fontsize=14,
+            fontsize=11,
             color="#27313d",
             fontweight="bold",
         )
