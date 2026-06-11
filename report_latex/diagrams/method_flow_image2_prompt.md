@@ -1,0 +1,124 @@
+# gpt-image-2 生成 LOSVER-Light 整体流程图 Prompt
+
+目标输出：
+
+```text
+report_latex/imgs/final/method_flow_image2.png
+```
+
+推荐尺寸：
+
+```text
+1536x1024
+```
+
+推荐质量：
+
+```text
+high
+```
+
+## Prompt
+
+```text
+Use case: infographic-diagram
+Asset type: academic paper workflow figure for a deep learning software engineering report
+Primary request: Create a clean, high-resolution academic workflow diagram for "LOSVER-Light", a lightweight line-risk-signal-guided function-level vulnerability detection method.
+
+Style/medium:
+Modern academic vector-like infographic, crisp edges, white background, subtle pastel module colors, thin dark-gray connectors, professional conference-paper style. It should look like a polished research pipeline figure, not a cartoon, not a UI mockup.
+
+Composition/framing:
+Landscape layout, readable at A4 report width. Use five main stages arranged left-to-right with generous spacing. Use compact labels, no dense paragraphs. Add simple icons or small visual cues where helpful, but keep the diagram clean.
+
+Exact text to include, verbatim:
+Title: "LOSVER-Light Pipeline"
+Stage 1: "Devign Function"
+Stage 2: "Line Risk Scoring"
+Stage 3: "Top-k Risk Lines"
+Stage 4: "Input Variants"
+Stage 5: "Qwen2.5-Coder + QLoRA"
+Stage 6: "Evaluation"
+
+Inside Stage 2, include three small chips:
+"API"
+"Pointer"
+"Control Flow"
+
+Inside Stage 4, include three branches:
+"Vanilla"
+"<MOD> Tag"
+"Tag + Prefix"
+
+Inside Stage 6, include three metrics:
+"F1"
+"ROC-AUC"
+"PR-AUC"
+
+Add a small side branch from Stage 1 or Stage 2 labeled:
+"Metrics Baseline"
+
+Add a final callout on the right:
+"Best: LOSVER-Light Tag"
+
+Visual structure:
+Devign Function -> Line Risk Scoring -> Top-k Risk Lines -> Input Variants -> Qwen2.5-Coder + QLoRA -> Evaluation -> Best: LOSVER-Light Tag.
+The Metrics Baseline branch should connect to Evaluation with a dotted line.
+
+Color palette:
+Soft blue for data, soft amber for line-risk signal, soft purple for input variants, soft teal for model, soft rose for evaluation. Use consistent typography and high contrast.
+
+Constraints:
+All text must be clear and spelled exactly as specified.
+Keep the amount of text minimal.
+No equations.
+No tiny unreadable labels.
+No fake logos.
+No watermark.
+No 3D perspective.
+No photographic elements.
+No decorative background.
+No Chinese text in the image.
+```
+
+纯 prompt 文件：
+
+```text
+report_latex/diagrams/method_flow_image2_prompt.txt
+```
+
+## 生成命令
+
+如果你已经设置好 `OPENAI_API_KEY`，可在仓库根目录执行：
+
+```bash
+python "$HOME/.codex/skills/.system/imagegen/scripts/image_gen.py" generate \
+  --model gpt-image-2 \
+  --prompt-file report_latex/diagrams/method_flow_image2_prompt.txt \
+  --size 1536x1024 \
+  --quality high \
+  --out report_latex/imgs/final/method_flow_image2.png
+```
+
+Windows PowerShell 可改成：
+
+```powershell
+python "$env:USERPROFILE\.codex\skills\.system\imagegen\scripts\image_gen.py" generate `
+  --model gpt-image-2 `
+  --prompt-file report_latex/diagrams/method_flow_image2_prompt.txt `
+  --size 1536x1024 `
+  --quality high `
+  --out report_latex/imgs/final/method_flow_image2.png
+```
+
+生成后，把 `report_latex/final_report.tex` 中的：
+
+```latex
+\includegraphics[width=\textwidth,keepaspectratio]{imgs/final/method_flow.png}
+```
+
+替换为：
+
+```latex
+\includegraphics[width=\textwidth,keepaspectratio]{imgs/final/method_flow_image2.png}
+```

@@ -7,6 +7,9 @@ LaTeX 文件 `report_latex/final_report.tex` 中已经用 `\figuretodo{...}` 标
 - LaTeX 标签：`fig:method-flow`
 - Mermaid 源码：`report_latex/diagrams/losver_light_flow.mmd`
 - 已导出/建议路径：`report_latex/imgs/final/method_flow.png`
+- 可选 gpt-image-2 prompt：`report_latex/diagrams/method_flow_image2_prompt.md`
+- 可选 gpt-image-2 纯 prompt：`report_latex/diagrams/method_flow_image2_prompt.txt`
+- 可选 gpt-image-2 输出路径：`report_latex/imgs/final/method_flow_image2.png`
 - 建议内容：
   - CodeXGLUE/Devign 原始函数
   - 行级风险评分
