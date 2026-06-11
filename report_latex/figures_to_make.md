@@ -21,7 +21,8 @@ LaTeX 文件 `report_latex/final_report.tex` 中已经用 `\figuretodo{...}` 标
 ## 图 2：主实验指标对比图
 
 - LaTeX 标签：`fig:main-results`
-- 建议路径：`report_latex/imgs/final/main_results.png`
+- 已生成路径：`report_latex/imgs/final/main_results.png`
+- 生成脚本：`src/plot_results.py`
 - 数据来源：`reports/tables/main_results.csv`
 - 建议形式：分组柱状图。
 - 横轴：Metrics-Baseline、Vanilla Qwen、LOSVER-Light Tag、LOSVER-Light Tag+Prefix。
@@ -44,7 +45,8 @@ LaTeX 文件 `report_latex/final_report.tex` 中已经用 `\figuretodo{...}` 标
 ## 图 3：top-k 消融趋势图
 
 - LaTeX 标签：`fig:topk-ablation`
-- 建议路径：`report_latex/imgs/final/topk_ablation.png`
+- 已生成路径：`report_latex/imgs/final/topk_ablation.png`
+- 生成脚本：`src/plot_results.py`
 - 数据来源：`reports/tables/ablation_results.csv`
 - 建议形式：折线图或柱状图。
 - 横轴：top-k=3/5/8。
@@ -66,7 +68,8 @@ LaTeX 文件 `report_latex/final_report.tex` 中已经用 `\figuretodo{...}` 标
 ## 图 4：人工错例类别分布图
 
 - LaTeX 标签：`fig:error-analysis`
-- 建议路径：`report_latex/imgs/final/error_analysis.png`
+- 已生成路径：`report_latex/imgs/final/error_analysis.png`
+- 生成脚本：`src/plot_results.py`
 - 数据来源：`reports/tables/manual_error_summary.csv`
 - 建议形式：水平柱状图。
 - 内容：长函数、上下文依赖、错误处理误报、弱行级信号等类别数量。
@@ -91,6 +94,12 @@ LaTeX 文件 `report_latex/final_report.tex` 中已经用 `\figuretodo{...}` 标
   - 颜色可以按 false positive / false negative 大致区分，或统一使用一种稳重颜色。
 
 ## 替换方式
+
+当前图 2、图 3、图 4 已经在 `final_report.tex` 中替换为真实图片。若需要重新生成，执行：
+
+```bash
+python src/plot_results.py
+```
 
 制作好图片后，把 `final_report.tex` 中对应的 `\figuretodo{...}` 替换为：
 

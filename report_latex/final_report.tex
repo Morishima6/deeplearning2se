@@ -178,7 +178,12 @@ Vanilla Qwen & 0.572108 & 0.520874 & 0.854980 & 0.647360 & 0.686953 & 0.679643 \
 \end{tabular}
 \end{table}
 
-\figuretodo{主实验指标对比图}{建议制作分组柱状图：横轴为 Metrics-Baseline、Vanilla Qwen、LOSVER-Light Tag、LOSVER-Light Tag+Prefix，纵轴展示 F1、ROC-AUC、PR-AUC 三个指标。}{fig:main-results}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth,keepaspectratio]{imgs/final/main_results.png}
+    \caption{主实验指标对比图}
+    \label{fig:main-results}
+\end{figure}
 
 从混淆矩阵看，\methodname{} Tag 将 Vanilla Qwen 的 FP 从 987 降到 762，TN 从 490 提升到 715，说明 \modtag{} 标签主要改善了误报控制。Tag+Prefix 相比 Vanilla 也有提升，但没有超过 Tag。它的 Recall 达到 0.901992，高于 Tag 的 0.841434，但 FP 增加到 947，Precision 下降到 0.544493。这说明风险行摘要过于显式时，模型可能把启发式风险行理解为强漏洞证据，从而增加误报。相比之下，Tag 方式只在原始上下文中标记风险行，是更温和、更有效的注入形式。
 
@@ -201,13 +206,23 @@ top\_k & Accuracy & Precision & Recall & F1 & ROC-AUC & PR-AUC \\
 \end{tabular}
 \end{table}
 
-\figuretodo{top-k 消融趋势图}{建议制作折线图或柱状图：横轴为 top-k=3/5/8，纵轴展示 F1、Precision、Recall，突出 top-k=5 的折中效果。}{fig:topk-ablation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.82\textwidth,keepaspectratio]{imgs/final/topk_ablation.png}
+    \caption{top-k 消融趋势图}
+    \label{fig:topk-ablation}
+\end{figure}
 
 人工错例分析抽样检查了 24 个错误样本，其中包含 12 个漏报和 12 个误报。漏报主要来自长函数、领域语义依赖和弱行级信号，例如编解码器、页表遍历和虚拟机执行循环。误报主要来自错误处理、资源释放、I/O 解析、短包装函数和正常低层指针操作。这说明 \methodname{} 可以帮助模型聚焦可疑位置，但不能替代真正的跨行、跨函数和领域语义理解。
 
 进一步看错例类别，\texttt{error\_or\_resource\_management\_false\_alarm} 出现 4 次，说明资源释放、错误返回和清理路径很容易被模型误认为漏洞；\texttt{long\_function\_or\_truncation} 出现 4 次，说明长函数仍会稀释或截断关键信息；\texttt{semantic\_or\_context\_dependent\_vulnerability} 出现 3 次，说明部分漏洞需要理解协议状态、调用约束或外部数据结构；\texttt{weak\_or\_misleading\_line\_signal} 出现 3 次，说明静态风险分数有时会把模型引向错误位置。这些结果与主实验一致：行级信号提升了模型平均性能，但它仍是启发式提示，而不是可靠的程序语义证明。
 
-\figuretodo{人工错例类别分布图}{建议根据 \texttt{reports/tables/manual\_error\_summary.csv} 制作水平柱状图，展示长函数、上下文依赖、错误处理误报、弱行级信号等类别的数量。}{fig:error-analysis}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.88\textwidth,keepaspectratio]{imgs/final/error_analysis.png}
+    \caption{人工错例类别分布图}
+    \label{fig:error-analysis}
+\end{figure}
 
 从高分作业角度看，本文实验链条相对完整：先有传统代码度量基线，用于证明浅层模式确实存在；再有无行级提示的 Qwen 基线，用于衡量代码大模型自身能力；随后加入 Tag 和 Tag+Prefix，验证 LOSVER 思想的轻量实现；最后通过 top-k 消融和人工错例分析解释方法边界。相比单纯追求一个最高分数，这种设计更能体现深度学习软件工程实验中的可复现性、对照性和可解释性。
 

@@ -120,6 +120,23 @@
   - 流程图使用 Mermaid CLI 导出，命令记录在 `report_latex/diagrams/README.md`。
   - 其余三张图暂未生成，只提供数据文件、字段和推荐图形设计，供用户自行制作。
 
+## 2026-06-11 报告结果图生成
+
+- 本次目标：编写 Python 制图脚本，生成最终报告中图 2、图 3、图 4。
+- 已完成：
+  - 重写 `src/plot_results.py`，使用 pandas、matplotlib、seaborn 读取实验 CSV 并生成报告级 PNG。
+  - 生成 `report_latex/imgs/final/main_results.png`，展示 F1、ROC-AUC、PR-AUC 主实验对比。
+  - 生成 `report_latex/imgs/final/topk_ablation.png`，展示 top-k 下 Precision、Recall、F1 的变化。
+  - 生成 `report_latex/imgs/final/error_analysis.png`，展示人工错例类别分布。
+  - 在 `report_latex/final_report.tex` 中将图 2、图 3、图 4 的占位框替换为真实图片引用。
+  - 在 `requirements.txt` 中加入 `seaborn==0.13.2`。
+- 关键命令：
+  - `python src/plot_results.py`
+- 输出文件：
+  - `report_latex/imgs/final/main_results.png`
+  - `report_latex/imgs/final/topk_ablation.png`
+  - `report_latex/imgs/final/error_analysis.png`
+
 ## 2026-06-07 16:04
 
 - 本次目标：在不代替用户执行服务器安装、下载和训练的前提下，补齐 Phase 2 到 Phase 4 的主要实验脚本。
