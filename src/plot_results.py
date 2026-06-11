@@ -56,7 +56,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def configure_style() -> None:
-    sns.set_theme(style="whitegrid", context="paper")
+    sns.set_theme(style="whitegrid", context="talk")
     plt.rcParams.update(
         {
             "figure.facecolor": "white",
@@ -67,6 +67,11 @@ def configure_style() -> None:
             "ytick.color": "#1f2933",
             "text.color": "#1f2933",
             "axes.titleweight": "bold",
+            "axes.titlesize": 20,
+            "axes.labelsize": 16,
+            "xtick.labelsize": 14,
+            "ytick.labelsize": 14,
+            "legend.fontsize": 14,
             "font.family": "sans-serif",
             "font.sans-serif": [
                 "Microsoft YaHei",
@@ -90,7 +95,7 @@ def save_fig(path: Path, dpi: int) -> None:
     print(f"Figure written to: {path}")
 
 
-def annotate_bars(ax: plt.Axes, fmt: str = "{:.3f}", fontsize: int = 8) -> None:
+def annotate_bars(ax: plt.Axes, fmt: str = "{:.3f}", fontsize: int = 12) -> None:
     for container in ax.containers:
         ax.bar_label(container, fmt=fmt, padding=2, fontsize=fontsize, color="#27313d")
 
@@ -115,7 +120,7 @@ def plot_main_results(csv_path: Path, out_path: Path, dpi: int) -> None:
         "PR-AUC": "#EDC948",
     }
 
-    plt.figure(figsize=(8.4, 4.9))
+    plt.figure(figsize=(9.6, 5.8))
     ax = sns.barplot(
         data=long_df,
         x="method",
@@ -136,13 +141,13 @@ def plot_main_results(csv_path: Path, out_path: Path, dpi: int) -> None:
             "综合最佳",
             ha="center",
             va="top",
-            fontsize=8,
+            fontsize=14,
             color="#355C7D",
             fontweight="bold",
             clip_on=True,
         )
 
-    annotate_bars(ax, fontsize=7)
+    annotate_bars(ax, fontsize=12)
     ax.set_title("主实验测试集结果")
     ax.set_xlabel("")
     ax.set_ylabel("分数")
@@ -181,7 +186,7 @@ def plot_topk_ablation(csv_path: Path, out_path: Path, dpi: int) -> None:
         "F1": "#4C78A8",
     }
 
-    plt.figure(figsize=(7.2, 4.7))
+    plt.figure(figsize=(8.8, 5.6))
     ax = sns.lineplot(
         data=long_df,
         x="top_k",
@@ -203,7 +208,7 @@ def plot_topk_ablation(csv_path: Path, out_path: Path, dpi: int) -> None:
         xy=(best_f1["top_k"], best_f1["f1"]),
         xytext=(best_f1["top_k"] + 0.25, best_f1["f1"] + 0.012),
         arrowprops={"arrowstyle": "->", "color": "#1F4E79", "lw": 1.0},
-        fontsize=8,
+        fontsize=14,
         color="#1F4E79",
         fontweight="bold",
     )
@@ -215,7 +220,7 @@ def plot_topk_ablation(csv_path: Path, out_path: Path, dpi: int) -> None:
             f"{row['score']:.3f}",
             ha="center",
             va="bottom",
-            fontsize=7,
+            fontsize=11,
             color="#27313d",
         )
 
@@ -224,7 +229,14 @@ def plot_topk_ablation(csv_path: Path, out_path: Path, dpi: int) -> None:
     ax.set_ylabel("分数")
     ax.set_xticks([3, 5, 8])
     ax.set_ylim(0.54, 0.89)
-    ax.legend(title="", loc="lower right", frameon=True, framealpha=0.92)
+    ax.legend(
+        title="",
+        ncol=3,
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.16),
+        frameon=True,
+        framealpha=0.92,
+    )
     ax.grid(axis="y", color="#d9dee7", linewidth=0.7)
     ax.grid(axis="x", visible=False)
     sns.despine(ax=ax, left=False, bottom=False)
@@ -248,7 +260,7 @@ def plot_error_summary(csv_path: Path, out_path: Path, dpi: int) -> None:
         for category in df["manual_category"]
     ]
 
-    plt.figure(figsize=(8.2, 5.2))
+    plt.figure(figsize=(9.5, 6.2))
     ax = plt.gca()
     bars = ax.barh(df["label"], df["count"], color=colors, edgecolor="#2f3a45", linewidth=0.6)
     for bar in bars:
@@ -259,7 +271,7 @@ def plot_error_summary(csv_path: Path, out_path: Path, dpi: int) -> None:
             f"{int(width)}",
             va="center",
             ha="left",
-            fontsize=8,
+            fontsize=14,
             color="#27313d",
             fontweight="bold",
         )
