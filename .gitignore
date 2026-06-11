@@ -37,6 +37,15 @@ reports/**/*.png
 reports/**/*.jpg
 reports/**/*.jpeg
 reports/**/*.xlsx
+report_latex.zip
+report_latex/SDU-template.*
+report_latex/LICENSE
+report_latex/README.md
+report_latex/codes/
+report_latex/imgs/assets/
+report_latex/imgs/*.bak
+report_latex/imgs/logo1.jpg
+report_latex/imgs/F_distribution_plots.pdf
 
 # OS and editor
 .DS_Store

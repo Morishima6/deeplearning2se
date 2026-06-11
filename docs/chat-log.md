@@ -95,6 +95,19 @@
   - `AGENTS.md` 用于约束审查、解释、编程、重构、沟通语言、事实核验和操作边界。
   - 后续协作时，服务器上的 Codex 应同时阅读 `README.md`、`docs/task.md`、`docs/server-handoff.md`、`AGENTS.md` 和 `docs/chat-log.md`。
 
+## 2026-06-11 LaTeX 报告整合
+
+- 本次目标：将 `reports/final_report_ready.md` 整合进 `report_latex` 模板，并准备参考文献文件。
+- 已完成：
+  - 新增 `report_latex/final_report.tex`，保留模板封面和样式，替换为深度学习期末报告正文。
+  - 新增 `report_latex/references.bib`，整理课程报告中引用的 LOSVER、VulnSC、Lost-in-the-End、Top Score、code metrics、TSE explainable VD、Qwen2.5-Coder、CodeXGLUE、LoRA、QLoRA 等条目。
+  - 新增 `report_latex/figures_to_make.md`，列出建议手工制作的 4 张图及其放置位置。
+  - 新增 `report_latex/BUILD.md`，说明 XeLaTeX + BibTeX 编译流程。
+- 说明：
+  - Google Scholar 不适合作为稳定自动抓取 BibTeX 的来源；本次优先使用 ACM/IEEE/arXiv/官方会议页可核对的信息生成 BibTeX。
+  - 当前 LaTeX 中的图为占位框，可直接编译；正式提交前建议替换为真实流程图和结果图。
+  - 本机未检测到 `xelatex`/`bibtex`，因此未在 Windows 本地完成 PDF 编译验证。
+
 ## 2026-06-07 16:04
 
 - 本次目标：在不代替用户执行服务器安装、下载和训练的前提下，补齐 Phase 2 到 Phase 4 的主要实验脚本。
