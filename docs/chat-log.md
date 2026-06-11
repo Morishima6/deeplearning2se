@@ -108,6 +108,18 @@
   - 当前 LaTeX 中的图为占位框，可直接编译；正式提交前建议替换为真实流程图和结果图。
   - 本机未检测到 `xelatex`/`bibtex`，因此未在 Windows 本地完成 PDF 编译验证。
 
+## 2026-06-11 报告流程图与制图说明
+
+- 本次目标：为最终报告补充 LOSVER-Light 整体流程图，并明确其余图表的数据来源和绘制形式。
+- 已完成：
+  - 新增 Mermaid 源码 `report_latex/diagrams/losver_light_flow.mmd`。
+  - 导出 PNG `report_latex/imgs/final/method_flow.png`。
+  - 在 `report_latex/final_report.tex` 中将 LOSVER-Light 整体流程图占位替换为真实图片引用。
+  - 更新 `report_latex/figures_to_make.md`，说明主实验指标图、top-k 消融图、人工错例类别图分别应使用哪些 CSV 字段生成。
+- 说明：
+  - 流程图使用 Mermaid CLI 导出，命令记录在 `report_latex/diagrams/README.md`。
+  - 其余三张图暂未生成，只提供数据文件、字段和推荐图形设计，供用户自行制作。
+
 ## 2026-06-07 16:04
 
 - 本次目标：在不代替用户执行服务器安装、下载和训练的前提下，补齐 Phase 2 到 Phase 4 的主要实验脚本。

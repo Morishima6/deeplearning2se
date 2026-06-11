@@ -118,7 +118,12 @@
 
 \methodname{} 的流程分为四步。第一，对函数代码按行切分。第二，对每一行计算静态风险分数。第三，选择分数最高的 top-k 风险行并构造输入文本。第四，使用 Qwen2.5-Coder + QLoRA 训练函数级漏洞分类器。行级风险评分关注十类信号：敏感 API，如 \texttt{strcpy}、\texttt{memcpy}、\texttt{sprintf}、\texttt{malloc}、\texttt{free}；指针和数组符号，如 \texttt{->}、\texttt{*}、\texttt{[}、\texttt{]}；分支循环，如 \texttt{if}、\texttt{for}、\texttt{while}、\texttt{switch}；错误处理 token，如 \texttt{return}、\texttt{goto}、\texttt{NULL}；I/O 或系统接口，如 \texttt{open}、\texttt{read}、\texttt{write}、\texttt{recv}、\texttt{send}；此外还考虑长行、符号密度和未检查的敏感调用。所有候选行按风险分数降序、行号升序排序，默认选择 \texttt{top\_k=5}。
 
-\figuretodo{LOSVER-Light 整体流程图}{建议制作一张流程图：CodeXGLUE/Devign 原始函数 $\rightarrow$ 行级风险评分 $\rightarrow$ top-k 风险行 $\rightarrow$ Vanilla/Tag/Tag+Prefix 三种输入 $\rightarrow$ Qwen2.5-Coder + QLoRA 分类器 $\rightarrow$ 指标与错例分析。}{fig:method-flow}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{imgs/final/method_flow.png}
+    \caption{LOSVER-Light 整体流程图}
+    \label{fig:method-flow}
+\end{figure}
 
 基于风险行，本文构造三种输入。Vanilla 输入直接使用原始函数代码 \texttt{text\_vanilla}，作为现代代码大模型基线。Tag 输入在 top-k 风险行前后加入 \modtag{} 和 \texttt{\textless/MOD\textgreater}，形成 \texttt{text\_tag}，其优点是保留风险行在原函数中的上下文位置。Tag+Prefix 输入在 Tag 前添加风险行摘要，列出行号、分数、触发原因和代码内容，形成 \texttt{text\_tag\_prefix}，用于检验更强风险提示是否进一步提升检测效果。
 
